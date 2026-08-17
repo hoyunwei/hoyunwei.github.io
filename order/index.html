@@ -379,7 +379,8 @@ const byId = {};
 // data/products.js 裡標了 hidden 的分類不上架（例如還沒拍實物照的）
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
-const isPre = it => it.stock === 0;
+// stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
+const isPre = it => it.stock === 0 && !it.noCount;
 
 /* ---------------- 畫商品 ---------------- */
 const nav = document.getElementById('nav');
@@ -464,13 +465,16 @@ function card(it){
   el.id = 'card-' + it.id;
   const tag = isPre(it)
     ? '<span class="tag pre">預購</span>'
-    : (it.stock <= CONFIG.lowStock ? '<span class="tag few">僅剩 ' + it.stock + '</span>' : '');
+    : (!it.noCount && it.stock <= CONFIG.lowStock ? '<span class="tag few">僅剩 ' + it.stock + '</span>' : '');
+  const stk = it.noCount ? (it.size || '') + ' · 現貨'
+            : isPre(it)  ? '現場完售 · 預購 9 月底出貨'
+            : '現貨 ' + it.stock + ' 件';
   el.innerHTML =
     '<div class="thumb">' + tag + '<img src="' + it.img + '" alt="' + it.name + '" loading="lazy"></div>' +
     '<div class="info">' +
       '<div class="nm">' + it.name + '</div>' +
       '<div class="pr"><b>$' + it.price + '</b></div>' +
-      '<div class="stk">' + (isPre(it) ? '現場完售 · 預購 9 月底出貨' : '現貨 ' + it.stock + ' 件') + '</div>' +
+      '<div class="stk">' + stk + '</div>' +
       '<div class="ctrl"></div>' +
     '</div>';
   renderCtrl(el, it);
@@ -484,7 +488,7 @@ function renderCtrl(el, it){
     box.innerHTML = '<button class="add">加入</button>';
     box.querySelector('.add').onclick = () => setQty(it.id, 1);
   } else {
-    const maxed = !isPre(it) && n >= it.stock;
+    const maxed = !isPre(it) && !it.noCount && n >= it.stock;
     box.innerHTML =
       '<div class="qty"><button class="minus">−</button>' +
       '<span class="n">' + n + '</span>' +
@@ -497,7 +501,7 @@ function renderCtrl(el, it){
 
 function setQty(id, n){
   const it = byId[id];
-  if (!isPre(it)) n = Math.min(n, it.stock);
+  if (!isPre(it) && !it.noCount) n = Math.min(n, it.stock);
   n = Math.max(0, n);
   if (n === 0) delete cart[id]; else cart[id] = n;
   renderCtrl(document.getElementById('card-' + id), it);
@@ -544,7 +548,8 @@ function openSheet(){
     const it = byId[id], n = cart[id];
     lines +=
       '<div class="line"><div class="t"><div class="n2">' + it.name + '</div>' +
-      '<div class="s2">' + groupTitle(it.cat) + (isPre(it) ? '　· 預購' : '') + '　$' + it.price + '</div></div>' +
+      '<div class="s2">' + groupTitle(it.cat) + (it.size ? ' ' + it.size : '') +
+        (isPre(it) ? '　· 預購' : '') + '　$' + it.price + '</div></div>' +
       '<div class="q">×' + n + '</div><div class="a">$' + (it.price * n) + '</div>' +
       '<button class="del" data-id="' + id + '">移除</button></div>';
   }
@@ -665,7 +670,8 @@ function orderText(no, c){
   let s = '【三支筆・文博線上補購】\n訂單編號：' + no + '\n\n';
   for (const id in cart){
     const it = byId[id], n = cart[id];
-    s += '· ' + groupTitle(it.cat) + '「' + it.name + '」×' + n +
+    s += '· ' + groupTitle(it.cat) + (it.size ? ' ' + it.size : '') +
+         '「' + it.name + '」×' + n +
          (isPre(it) ? '（預購）' : '') + '　$' + (it.price * n) + '\n';
   }
   s += '\n商品小計：$' + c.sub + '\n運費：' + (c.ship ? '$' + c.ship : '免運') +
