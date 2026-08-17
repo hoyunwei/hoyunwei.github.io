@@ -54,6 +54,32 @@ section{padding:26px 14px 6px;scroll-margin-top:56px}
 .sec-head .spec{font-size:12px;color:var(--ink-soft)}
 .sec-head .price{margin-left:auto;font-size:14px;color:var(--red);font-weight:600}
 
+/* ---------- 分類開頭的實拍照 ---------- */
+.shots{display:none}
+.shots.has{
+  display:flex; gap:10px; margin:0 0 16px;
+  overflow-x:auto; -webkit-overflow-scrolling:touch;
+  scroll-snap-type:x mandatory; padding-bottom:2px;
+}
+.shots::-webkit-scrollbar{height:0}
+.shot{
+  height:200px; width:auto; max-width:none; flex:0 0 auto;
+  border-radius:10px; border:1px solid var(--line); background:var(--paper-2);
+  object-fit:cover; scroll-snap-align:start; cursor:zoom-in;
+}
+.shot:only-child{width:100%;height:auto;max-height:340px;object-fit:cover}
+@media(min-width:620px){.shot{height:260px}}
+
+.shotbox{
+  position:fixed; inset:0; z-index:50; background:rgba(28,26,23,.92);
+  display:flex; align-items:center; justify-content:center; padding:20px; cursor:zoom-out;
+}
+.shotbox img{max-width:100%;max-height:100%;border-radius:8px;object-fit:contain}
+.shotbox .x{
+  position:absolute; top:14px; right:16px; background:none; border:none;
+  color:#fff; font-size:30px; line-height:1; padding:6px 10px; cursor:pointer;
+}
+
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 @media(min-width:620px){.grid{grid-template-columns:repeat(3,1fr);gap:16px}}
 @media(min-width:900px){.grid{grid-template-columns:repeat(4,1fr)}
@@ -249,7 +275,13 @@ section{padding:26px 14px 6px;scroll-margin-top:56px}
   font-size:15px;letter-spacing:.06em;line-height:1.4;
   border:1px solid var(--ink);background:#fff;color:var(--ink);
 }
+.btns .copy{background:var(--red);border-color:var(--red);color:#fff;font-weight:600}
 .btns .primary{background:var(--green);border-color:var(--green);color:#fff}
+.shotnote{
+  text-align:center; font-size:12.5px; line-height:1.7; color:var(--ink-soft);
+  margin:12px 0 0;
+}
+.shotnote b{color:var(--ink)}
 
 footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20px 10px;line-height:1.9}
 .empty{text-align:center;color:var(--ink-soft);font-size:13px;padding:26px 0}
@@ -319,16 +351,21 @@ const CONFIG = {
   freeShipOver: 450,    // 滿額免運門檻
   lineUrl: 'https://lin.ee/v7pysVk',
   lowStock: 3,          // 剩幾件以下顯示「僅剩 N 件」
+  // 每個分類開頭的實拍照：把檔案放進 photos/，命名成「分類名-1.jpg」「分類名-2.jpg」⋯⋯
+  // 有幾張就放幾張（最多 6 張），沒放的自動不顯示，不用改這裡的程式
+  photoNames: {a4:'A4海報', long:'細長海報', letter:'凸版明信片', square:'凸版方形', lfolder:'L夾', crystal:'水晶貼'},
+  photoMax: 6,
   // Google 表單「商品訂購單」，送出後自動進回覆試算表
   form: {
     action: 'https://docs.google.com/forms/d/e/1FAIpQLSe8sWf9S12CNzfJPCosZhCumYfB7IF8uVb1iLB5ysiLRg6Wgw/formResponse',
     fields: {
+      orderNo:   'entry.1647505117',   // 訂單編號（獨立一欄，方便在試算表搜尋排序）
       name:      'entry.692416839',    // 姓名（下單人）
       line:      'entry.190415697',    // line名稱
       store:     'entry.1858551510',   // 7-11收件店號、店名
       recipient: 'entry.2105812999',   // 收件姓名
       phone:     'entry.113790661',    // 收件電話
-      items:     'entry.1515194948',   // 訂單明細（訂單編號和備註也放這裡）
+      items:     'entry.1515194948',   // 訂單明細（開頭也帶編號，客人貼到 LINE 時看得到）
       total:     'entry.152988990'     // 總金額
     }
   }
@@ -365,10 +402,59 @@ GROUPS.forEach((g, i) => {
     '<span class="price">' + (prices.length > 1 ? '$' + prices[0] + '–' + prices[prices.length-1] : '$' + prices[0]) + '</span></div>' +
     '<div class="grid" id="grid-' + g.key + '"></div>';
   secs.appendChild(sec);
+  sec.insertBefore(photoStrip(g), sec.querySelector('.grid'));   // 實拍照放在商品格線上面
 
   const grid = sec.querySelector('.grid');
   g.items.forEach(it => grid.appendChild(card(it)));
 });
+
+/* 分類開頭的實拍照。photos/{分類名}-1.jpg 依序試到 photoMax，
+   找不到的自動移除，所以小何只要丟檔案進資料夾、不用改程式。先試 jpg 再試 png。 */
+function photoStrip(g){
+  const wrap = document.createElement('div');
+  wrap.className = 'shots';
+  const base = CONFIG.photoNames[g.key] || g.title;
+  const path = (i, ext) => 'photos/' + encodeURIComponent(base + '-' + i) + '.' + ext;
+
+  // 先探測檔案在不在，確定有才插進版面。這樣沒放照片的分類不會留下空框，
+  // 也不會等捲到才發現圖不存在而造成版面跳動。
+  const tries = [];
+  for (let i = 1; i <= CONFIG.photoMax; i++){
+    tries.push(probeImg(path(i, 'jpg'))
+      .catch(() => probeImg(path(i, 'png')))     // jpg 沒有就試 png
+      .catch(() => null));
+  }
+  Promise.all(tries).then(found => {
+    found.filter(Boolean).forEach((src, idx) => {
+      const img = document.createElement('img');
+      img.className = 'shot';
+      img.src = src;
+      img.alt = g.title + ' 實拍照 ' + (idx + 1);
+      img.onclick = () => openShot(src, img.alt);
+      wrap.appendChild(img);
+    });
+    if (wrap.querySelector('.shot')) wrap.classList.add('has');
+  });
+  return wrap;
+}
+
+function probeImg(src){
+  return new Promise((ok, no) => {
+    const im = new Image();
+    im.onload = () => ok(src);
+    im.onerror = () => no();
+    im.src = src;
+  });
+}
+
+/* 點照片放大看細節（客人想看紙質、壓凹） */
+function openShot(src, alt){
+  const box = document.createElement('div');
+  box.className = 'shotbox';
+  box.innerHTML = '<img src="' + src + '" alt="' + alt + '"><button class="x" aria-label="關閉">×</button>';
+  box.onclick = () => box.remove();
+  document.body.appendChild(box);
+}
 
 function card(it){
   const el = document.createElement('div');
@@ -594,6 +680,7 @@ function sendToForm(no, c, text){
   if (!F.action) return Promise.resolve();
   const fd = new FormData();
   const put = (key, val) => { if (F.fields[key]) fd.append(F.fields[key], val); };
+  put('orderNo', no);
   put('name', saved.name);
   put('line', saved.line);
   put('store', saved.store);
@@ -625,6 +712,8 @@ function showDone(no, text){
         '<button class="copy">複製訂單編號和明細</button>' +
         '<a class="primary" href="' + CONFIG.lineUrl + '" target="_blank" rel="noopener">前往官方 LINE 回傳訂單資訊</a>' +
       '</div>' +
+      '<p class="shotnote">按下按鈕就已經複製好完整訂單了，到 LINE 貼上即可。<br>' +
+        '也建議<b>截圖保存這個畫面</b>，之後查詢訂單用得到。</p>' +
     '</div>';
   // 編號區塊和按鈕複製的是同一段文字（開頭就是訂單編號），不用分兩次複製
   const btn = panel.querySelector('.copy');
