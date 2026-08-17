@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>三支筆工作室 · 文博會線上補購</title>
+<style>
+:root{
+  --ink:#4A3728; --ink-soft:#8A8175; --ink-faint:#B5AB9C;
+  --paper:#FDFBF6; --paper-2:#F7F2E8; --line:#E4DCCC;
+  --red:#C8452E; --olive:#7D8542; --green:#4F6B52;
+  --sans:"PingFang TC","Heiti TC","Microsoft JhengHei",sans-serif;
+  --serif:"Songti TC","Kaiti TC",serif;
+  --bar:76px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink); font-family:var(--sans);
+  font-size:15px; line-height:1.65;
+  padding-bottom:calc(var(--bar) + env(safe-area-inset-bottom));
+}
+img{display:block;max-width:100%}
+button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer}
+
+/* ---------- 頁首 ---------- */
+header{
+  background:var(--paper-2); border-bottom:1px solid var(--line);
+  padding:30px 20px 28px; text-align:center;
+}
+header h1{
+  font-family:var(--serif); font-size:23px; font-weight:normal;
+  letter-spacing:.1em; line-height:1.55; margin:0;
+}
+@media(min-width:620px){header h1{font-size:27px}}
+
+/* ---------- 分類導覽 ---------- */
+nav{
+  position:sticky; top:0; z-index:20; background:rgba(253,251,246,.96);
+  backdrop-filter:blur(8px); border-bottom:1px solid var(--line);
+  overflow-x:auto; -webkit-overflow-scrolling:touch;
+}
+nav .inner{display:flex;gap:4px;padding:10px 14px;width:max-content;min-width:100%}
+nav button{
+  border:1px solid var(--line); background:#fff; border-radius:999px;
+  padding:7px 15px; font-size:13px; color:var(--ink-soft); white-space:nowrap;
+}
+nav button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+
+/* ---------- 區塊 ---------- */
+section{padding:26px 14px 6px;scroll-margin-top:56px}
+.sec-head{display:flex;align-items:baseline;gap:10px;margin:0 4px 14px;flex-wrap:wrap}
+.sec-head h2{font-family:var(--serif);font-size:20px;font-weight:normal;letter-spacing:.1em;margin:0}
+.sec-head .spec{font-size:12px;color:var(--ink-soft)}
+.sec-head .price{margin-left:auto;font-size:14px;color:var(--red);font-weight:600}
+
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(min-width:620px){.grid{grid-template-columns:repeat(3,1fr);gap:16px}}
+@media(min-width:900px){.grid{grid-template-columns:repeat(4,1fr)}
+  section{max-width:1080px;margin:0 auto}}
+
+/* ---------- 商品卡 ---------- */
+.card{
+  background:#fff; border:1px solid var(--line); border-radius:10px;
+  overflow:hidden; display:flex; flex-direction:column;
+}
+.card.picked{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.thumb{
+  position:relative; height:170px; background:var(--paper-2);
+  display:flex; align-items:center; justify-content:center; padding:10px;
+}
+@media(min-width:620px){.thumb{height:210px}}
+.thumb img{max-height:100%;width:auto;object-fit:contain}
+.tag{
+  position:absolute; top:8px; left:8px; font-size:11px; line-height:1;
+  padding:5px 8px; border-radius:999px; color:#fff; letter-spacing:.04em;
+}
+.tag.pre{background:var(--olive)}
+.tag.few{background:var(--red)}
+.info{padding:10px 11px 11px;display:flex;flex-direction:column;gap:8px;flex:1}
+.nm{font-size:14px;font-weight:600;letter-spacing:.04em;line-height:1.4}
+.pr{font-size:13px;color:var(--ink-soft)}
+.pr b{color:var(--ink);font-size:15px;font-weight:600}
+.stk{font-size:11px;color:var(--ink-faint);margin-top:-4px}
+
+.qty{display:flex;align-items:center;gap:0;margin-top:auto}
+.qty button{
+  width:34px;height:34px;border:1px solid var(--line);background:#fff;
+  font-size:17px;line-height:1;border-radius:8px;color:var(--ink);
+  display:flex;align-items:center;justify-content:center;padding:0;
+}
+.qty button:disabled{color:var(--ink-faint);background:var(--paper-2);cursor:not-allowed}
+.qty .n{flex:1;text-align:center;font-size:15px;font-weight:600;min-width:34px}
+.add{
+  width:100%;height:34px;border:1px solid var(--ink);background:#fff;
+  border-radius:8px;font-size:13px;letter-spacing:.06em;
+}
+.add:hover{background:var(--ink);color:#fff}
+
+/* ---------- 開頭說明區 ---------- */
+.intro{padding:22px 14px 4px;max-width:620px;margin:0 auto}
+.intro h2{
+  font-family:var(--serif); font-size:19px; font-weight:normal; letter-spacing:.14em;
+  margin:0 0 12px; text-align:center;
+}
+.flow{margin:0 0 14px;padding:0;list-style:none;counter-reset:step}
+.flow li{
+  position:relative; counter-increment:step; padding:9px 0 9px 34px;
+  font-size:13.5px; line-height:1.7; color:var(--ink-soft);
+  border-bottom:1px solid var(--line);
+}
+.flow li:last-child{border-bottom:none}
+.flow li::before{
+  content:counter(step); position:absolute; left:0; top:11px;
+  width:22px; height:22px; border-radius:50%; background:var(--ink); color:#fff;
+  font-size:12px; line-height:22px; text-align:center;
+}
+.flow li b{color:var(--ink);font-weight:600}
+.flow li span{display:block;font-size:12px;line-height:1.6;margin-top:3px}
+.flow li.hi{background:rgba(200,69,46,.07);border-radius:8px;border-bottom:none;padding-left:34px;padding-right:10px}
+.flow li.hi::before{background:var(--red);left:6px}
+.flow li.hi, .flow li.hi b, .flow li.hi span{color:var(--red)}
+.flow li.hi b{font-size:14.5px}
+.flow li.hi span{opacity:.85}
+
+.notice{
+  background:var(--paper-2); border:1px solid var(--line);
+  border-radius:10px; padding:14px 16px; font-size:12.5px; line-height:1.85; color:var(--ink-soft);
+}
+.notice b{color:var(--ink)}
+.notice b.hot{color:var(--red);font-weight:600}
+
+.jump{
+  display:block; text-align:center; text-decoration:none; margin:14px 0 4px;
+  border:1px solid var(--ink); border-radius:10px; padding:13px;
+  font-size:15px; letter-spacing:.1em; color:var(--ink);
+}
+.jump:hover{background:var(--ink);color:#fff}
+
+/* ---------- 底部購物列 ---------- */
+.bar{
+  position:fixed; left:0; right:0; bottom:0; z-index:30;
+  background:rgba(253,251,246,.97); backdrop-filter:blur(10px);
+  border-top:1px solid var(--line);
+  padding:11px 14px calc(11px + env(safe-area-inset-bottom));
+  display:flex; align-items:center; gap:12px;
+}
+.bar .sum{flex:1;min-width:0}
+.bar .sum .l1{font-size:12px;color:var(--ink-soft)}
+.bar .sum .l2{font-size:19px;font-weight:600;letter-spacing:.02em}
+.bar .sum .l2 small{font-size:12px;font-weight:400;color:var(--ink-soft);margin-left:6px}
+.bar .go{
+  background:var(--ink); color:#fff; border:none; border-radius:10px;
+  padding:12px 22px; font-size:15px; letter-spacing:.08em; white-space:nowrap;
+}
+.bar .go:disabled{background:var(--ink-faint);cursor:not-allowed}
+
+/* ---------- 結帳抽屜 ---------- */
+.sheet{
+  position:fixed; inset:0; z-index:40; display:none;
+  background:rgba(74,55,40,.4);
+}
+.sheet.open{display:block}
+.sheet .panel{
+  position:absolute; left:0; right:0; bottom:0; max-height:92vh; overflow-y:auto;
+  background:var(--paper); border-radius:16px 16px 0 0;
+  padding:20px 18px calc(24px + env(safe-area-inset-bottom));
+}
+@media(min-width:700px){
+  .sheet .panel{max-width:560px;margin:0 auto;border-radius:16px;
+    top:50%;bottom:auto;transform:translateY(-50%);max-height:88vh}
+}
+.sheet h3{font-family:var(--serif);font-size:19px;font-weight:normal;letter-spacing:.1em;margin:0 0 4px}
+.sheet .close{
+  position:absolute;top:14px;right:14px;background:none;border:none;
+  font-size:22px;line-height:1;color:var(--ink-soft);padding:4px 8px;
+}
+.lines{margin:14px 0;border-top:1px solid var(--line)}
+.line{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.line .t{flex:1;min-width:0}
+.line .t .n2{font-weight:600}
+.line .t .s2{font-size:11.5px;color:var(--ink-soft)}
+.line .q{color:var(--ink-soft);font-size:13px}
+.line .a{width:64px;text-align:right;font-weight:600}
+.line .del{background:none;border:none;color:var(--ink-faint);font-size:12px;padding:2px 4px}
+.totals{font-size:13.5px;margin:12px 0 4px}
+.totals div{display:flex;justify-content:space-between;padding:4px 0}
+.totals .grand{font-size:17px;font-weight:600;border-top:1px solid var(--line);margin-top:6px;padding-top:10px}
+.freehint{font-size:12px;color:var(--olive);padding:6px 0}
+
+.field{margin:22px 0}
+.field label{display:block;font-size:12.5px;color:var(--ink-soft);margin-bottom:4px;letter-spacing:.04em}
+.field label .req{color:var(--red);margin-left:3px}
+.field label .same{
+  float:right; border:1px solid var(--line); background:#fff; border-radius:999px;
+  padding:3px 10px; font-size:11px; color:var(--ink-soft); line-height:1.4;
+}
+.field label .same:hover{border-color:var(--ink);color:var(--ink)}
+.field input,.field textarea{
+  width:100%; border:none; border-bottom:1.5px solid var(--line);
+  background:transparent; padding:8px 2px; font-size:15px; font-family:inherit;
+  color:var(--ink); border-radius:0; outline:none;
+}
+.field input:focus,.field textarea:focus{border-bottom-color:var(--ink)}
+.field.confirmed input,.field.confirmed textarea{border-bottom-color:transparent;background:var(--paper-2);border-radius:6px;padding-left:8px}
+.field textarea{resize:vertical;min-height:62px;line-height:1.6}
+.field .hint{font-size:11.5px;color:var(--ink-faint);margin-top:3px;line-height:1.5}
+.field.bad input,.field.bad textarea{border-bottom-color:var(--red)}
+
+.submit{
+  width:100%; margin-top:18px; background:var(--ink); color:#fff; border:none;
+  border-radius:10px; padding:15px; font-size:16px; letter-spacing:.1em;
+}
+.submit:disabled{background:var(--ink-faint)}
+
+/* ---------- 完成畫面 ---------- */
+.done{text-align:center;padding:10px 0 4px}
+.done .mark{font-family:var(--serif);font-size:34px;color:var(--green);margin-bottom:6px}
+.done h3{margin-bottom:10px}
+.done .no{
+  margin:14px 0 16px; border:1px solid var(--line); background:var(--paper-2);
+  border-radius:12px; padding:14px 16px; cursor:pointer; transition:border-color .15s;
+}
+.done .no:hover{border-color:var(--ink)}
+.done .no .lbl{font-size:12px;color:var(--ink-soft);letter-spacing:.1em}
+.done .no .val{
+  font-size:28px; font-weight:600; letter-spacing:.06em; color:var(--ink);
+  margin:4px 0 6px; line-height:1.25; word-break:break-all;
+}
+.done .no .tip{font-size:11.5px;color:var(--ink-faint)}
+.done .no.copied{border-color:var(--green)}
+.done .no.copied .tip{color:var(--green)}
+.steps{text-align:left;background:var(--paper-2);border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.9}
+.steps ol{margin:6px 0 0;padding-left:20px}
+.steps li{margin-bottom:6px}
+.steps li:last-child{margin-bottom:0}
+.steps li.hi{
+  color:var(--red); font-weight:500; font-size:14px; line-height:1.75;
+  background:rgba(200,69,46,.07); border-radius:8px;
+  margin:0 -8px 10px; padding:9px 10px 9px 0;
+}
+.steps li.hi b{font-weight:700}
+.steps li .sub{display:block;font-size:12px;font-weight:400;color:var(--ink-soft);line-height:1.7;margin-top:2px}
+.steps li.hi .sub{color:var(--red);opacity:.85}
+.steps li .sub b{color:var(--ink);font-weight:600}
+.btns{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.btns a,.btns button{
+  width:100%;text-align:center;text-decoration:none;border-radius:10px;padding:14px;
+  font-size:15px;letter-spacing:.06em;line-height:1.4;
+  border:1px solid var(--ink);background:#fff;color:var(--ink);
+}
+.btns .primary{background:var(--green);border-color:var(--green);color:#fff}
+
+footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20px 10px;line-height:1.9}
+.empty{text-align:center;color:var(--ink-soft);font-size:13px;padding:26px 0}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>三支筆工作室｜2026文博會新品線上購</h1>
+</header>
+
+<div class="intro">
+  <h2>怎麼買</h2>
+  <ol class="flow">
+    <li><b>選好商品</b>，按加入，金額和運費會自動算</li>
+    <li>填收件資料<b>送出訂單</b>，畫面會給你一組訂單編號</li>
+    <li class="hi"><b>把訂單編號和明細傳到官方 LINE</b>
+      <span>這一步沒做，訂單不算成立，我這邊無法跟你核對</span></li>
+    <li>我核對後給你<b>匯款帳號</b>，收到款項才安排出貨</li>
+  </ol>
+
+  <div class="notice">
+    <b>庫存</b><br>
+    · 商品頁上的現貨數量是展後盤點的數字，<b>不會即時更新</b>。如果剛好同時被買走，會在官方 LINE 跟您確認要改預購還是換款<br><br>
+    <b>出貨</b><br>
+    · 【 現貨 】訂單確認後，<b>一週內</b>寄出。<br>
+    · 【 預購 】現場完售的款式，預計 <b>9 月底</b>出貨，到時候會用 LINE 通知<br>
+    · 同一筆訂單如果現貨和預購都有，會等預購印好一起寄。<br>
+    · 統一使用「7-11 店到店」取貨，運費 60 元，<b class="hot">單筆滿 450 元免運</b>。<br><br>
+    <b>付款</b><br>
+    · 匯款轉帳，帳號會在官方 LINE 核對訂單時提供給您，<b>這個網頁不收任何付款資訊</b><br><br>
+    <b>海報的框</b><br>
+    · 這裡只賣海報本身，不含框。A4 海報及明信片皆可選用 IKEA 畫框，就會是攤位上看到的樣子，詳細規格可私訊官方 LINE。
+  </div>
+
+  <a class="jump" href="#sec-a4" id="jumpBtn">開始選商品</a>
+</div>
+
+<nav><div class="inner" id="nav"></div></nav>
+
+<div id="sections"></div>
+
+<footer>
+  三支筆工作室　·　有任何問題請洽官方 LINE<br>
+  這份表單只收訂單資料，不經手任何付款資訊
+</footer>
+
+<div class="bar">
+  <div class="sum">
+    <div class="l1" id="barCount">還沒選商品</div>
+    <div class="l2" id="barTotal">$0</div>
+  </div>
+  <button class="go" id="goBtn" disabled>查看訂單</button>
+</div>
+
+<div class="sheet" id="sheet">
+  <div class="panel" id="panel"></div>
+</div>
+
+<script src="data/products.js"></script>
+<script>
+/* =========================================================
+   設定區：要改運費、LINE 連結、Google 表單就改這裡
+   ========================================================= */
+const CONFIG = {
+  shipFee: 60,          // 宅配運費
+  freeShipOver: 450,    // 滿額免運門檻
+  lineUrl: 'https://lin.ee/v7pysVk',
+  lowStock: 3,          // 剩幾件以下顯示「僅剩 N 件」
+  // Google 表單「商品訂購單」，送出後自動進回覆試算表
+  form: {
+    action: 'https://docs.google.com/forms/d/e/1FAIpQLSe8sWf9S12CNzfJPCosZhCumYfB7IF8uVb1iLB5ysiLRg6Wgw/formResponse',
+    fields: {
+      name:      'entry.692416839',    // 姓名（下單人）
+      line:      'entry.190415697',    // line名稱
+      store:     'entry.1858551510',   // 7-11收件店號、店名
+      recipient: 'entry.2105812999',   // 收件姓名
+      phone:     'entry.113790661',    // 收件電話
+      items:     'entry.1515194948',   // 訂單明細（訂單編號和備註也放這裡）
+      total:     'entry.152988990'     // 總金額
+    }
+  }
+};
+
+/* ---------------- 狀態 ---------------- */
+const cart = {};                       // id -> 數量
+const byId = {};
+// data/products.js 裡標了 hidden 的分類不上架（例如還沒拍實物照的）
+const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
+GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
+const isPre = it => it.stock === 0;
+
+/* ---------------- 畫商品 ---------------- */
+const nav = document.getElementById('nav');
+const secs = document.getElementById('sections');
+
+GROUPS.forEach((g, i) => {
+  const b = document.createElement('button');
+  b.textContent = g.title;
+  b.className = i === 0 ? 'on' : '';
+  b.onclick = () => {
+    document.getElementById('sec-' + g.key).scrollIntoView({behavior:'smooth', block:'start'});
+    setActiveTab(i);          // 不等捲動事件，點下去就先亮起來
+  };
+  nav.appendChild(b);
+
+  const sec = document.createElement('section');
+  sec.id = 'sec-' + g.key;
+  const prices = [...new Set(g.items.map(it => it.price))].sort((a,b)=>a-b);
+  sec.innerHTML =
+    '<div class="sec-head"><h2>' + g.title + '</h2>' +
+    '<span class="spec">' + g.spec + '</span>' +
+    '<span class="price">' + (prices.length > 1 ? '$' + prices[0] + '–' + prices[prices.length-1] : '$' + prices[0]) + '</span></div>' +
+    '<div class="grid" id="grid-' + g.key + '"></div>';
+  secs.appendChild(sec);
+
+  const grid = sec.querySelector('.grid');
+  g.items.forEach(it => grid.appendChild(card(it)));
+});
+
+function card(it){
+  const el = document.createElement('div');
+  el.className = 'card';
+  el.id = 'card-' + it.id;
+  const tag = isPre(it)
+    ? '<span class="tag pre">預購</span>'
+    : (it.stock <= CONFIG.lowStock ? '<span class="tag few">僅剩 ' + it.stock + '</span>' : '');
+  el.innerHTML =
+    '<div class="thumb">' + tag + '<img src="' + it.img + '" alt="' + it.name + '" loading="lazy"></div>' +
+    '<div class="info">' +
+      '<div class="nm">' + it.name + '</div>' +
+      '<div class="pr"><b>$' + it.price + '</b></div>' +
+      '<div class="stk">' + (isPre(it) ? '現場完售 · 預購 9 月底出貨' : '現貨 ' + it.stock + ' 件') + '</div>' +
+      '<div class="ctrl"></div>' +
+    '</div>';
+  renderCtrl(el, it);
+  return el;
+}
+
+function renderCtrl(el, it){
+  const box = el.querySelector('.ctrl');
+  const n = cart[it.id] || 0;
+  if (n === 0){
+    box.innerHTML = '<button class="add">加入</button>';
+    box.querySelector('.add').onclick = () => setQty(it.id, 1);
+  } else {
+    const maxed = !isPre(it) && n >= it.stock;
+    box.innerHTML =
+      '<div class="qty"><button class="minus">−</button>' +
+      '<span class="n">' + n + '</span>' +
+      '<button class="plus"' + (maxed ? ' disabled' : '') + '>＋</button></div>';
+    box.querySelector('.minus').onclick = () => setQty(it.id, n - 1);
+    box.querySelector('.plus').onclick = () => setQty(it.id, n + 1);
+  }
+  el.classList.toggle('picked', n > 0);
+}
+
+function setQty(id, n){
+  const it = byId[id];
+  if (!isPre(it)) n = Math.min(n, it.stock);
+  n = Math.max(0, n);
+  if (n === 0) delete cart[id]; else cart[id] = n;
+  renderCtrl(document.getElementById('card-' + id), it);
+  updateBar();
+  if (document.getElementById('sheet').classList.contains('open')) openSheet();
+}
+
+/* ---------------- 金額 ---------------- */
+function calc(){
+  let count = 0, sub = 0, hasPre = false;
+  for (const id in cart){
+    const it = byId[id], n = cart[id];
+    count += n; sub += it.price * n;
+    if (isPre(it)) hasPre = true;
+  }
+  const ship = (count === 0 || sub >= CONFIG.freeShipOver) ? 0 : CONFIG.shipFee;
+  return {count, sub, ship, total: sub + ship, hasPre};
+}
+
+function updateBar(){
+  const c = calc();
+  document.getElementById('barCount').textContent =
+    c.count === 0 ? '還沒選商品'
+    : c.count + ' 件' + (c.ship === 0 ? '　含運免費' : '　+ 運費 ' + c.ship);
+  document.getElementById('barTotal').innerHTML =
+    '$' + c.total + (c.count && c.ship ? '<small>差 $' + (CONFIG.freeShipOver - c.sub) + ' 免運</small>' : '');
+  document.getElementById('goBtn').disabled = c.count === 0;
+}
+updateBar();
+
+/* ---------------- 結帳 ---------------- */
+const sheet = document.getElementById('sheet');
+const panel = document.getElementById('panel');
+document.getElementById('goBtn').onclick = openSheet;
+sheet.onclick = e => { if (e.target === sheet) sheet.classList.remove('open'); };
+
+const saved = {name:'', line:'', recipient:'', phone:'', store:'', note:''};
+
+function openSheet(){
+  const c = calc();
+  if (c.count === 0) return;
+  let lines = '';
+  for (const id in cart){
+    const it = byId[id], n = cart[id];
+    lines +=
+      '<div class="line"><div class="t"><div class="n2">' + it.name + '</div>' +
+      '<div class="s2">' + groupTitle(it.cat) + (isPre(it) ? '　· 預購' : '') + '　$' + it.price + '</div></div>' +
+      '<div class="q">×' + n + '</div><div class="a">$' + (it.price * n) + '</div>' +
+      '<button class="del" data-id="' + id + '">移除</button></div>';
+  }
+  panel.innerHTML =
+    '<button class="close">×</button>' +
+    '<h3>訂單確認</h3>' +
+    '<div class="lines">' + lines + '</div>' +
+    '<div class="totals">' +
+      '<div><span>商品小計</span><span>$' + c.sub + '</span></div>' +
+      '<div><span>運費</span><span>' + (c.ship ? '$' + c.ship : '免運') + '</span></div>' +
+      '<div class="grand"><span>合計</span><span>$' + c.total + '</span></div>' +
+    '</div>' +
+    (c.ship ? '<div class="freehint">再買 $' + (CONFIG.freeShipOver - c.sub) + ' 就免運了</div>' : '') +
+    (c.hasPre ? '<div class="freehint">這筆有預購款，會等重新印好一起寄，預計 9 月底出貨</div>' : '') +
+    field('name', '你的姓名', true, '') +
+    field('line', 'LINE 顯示名稱', true, '要用這個跟你核對訂單、通知出貨') +
+    field('store', '7-11 取貨門市', true, '請填店號和店名，例如 123456 光復門市') +
+    field('recipient', '收件人姓名', true, '請填正確姓名，取貨要對', false, true) +
+    field('phone', '收件人電話', true, '') +
+    field('note', '備註', false, '想先收現貨、或其他需求都寫這裡', true) +
+    '<button class="submit">送出訂單</button>';
+
+  panel.querySelector('.close').onclick = () => sheet.classList.remove('open');
+  panel.querySelectorAll('.del').forEach(b => b.onclick = () => setQty(b.dataset.id, 0));
+  panel.querySelectorAll('.field').forEach(wireField);
+  panel.querySelector('.submit').onclick = submit;
+  sheet.classList.add('open');
+}
+
+function groupTitle(key){
+  const g = GROUPS.find(g => g.key === key);
+  return g ? g.title : '';
+}
+
+function field(k, label, req, hint, area, sameAsBuyer){
+  const v = saved[k].replace(/"/g, '&quot;');
+  const input = area
+    ? '<textarea data-k="' + k + '">' + saved[k] + '</textarea>'
+    : '<input data-k="' + k + '" value="' + v + '">';
+  return '<div class="field" data-f="' + k + '"><label>' + label +
+    (req ? '<span class="req">*</span>' : '') +
+    (sameAsBuyer ? '<button type="button" class="same">＝ 同上</button>' : '') +
+    '</label>' + input +
+    (hint ? '<div class="hint">' + hint + '</div>' : '') + '</div>';
+}
+
+/* Enter 兩段式確認：第一下確認（底線消失），第二下才送出 */
+function wireField(f){
+  const el = f.querySelector('input,textarea');
+  const k = el.dataset.k;
+  const same = f.querySelector('.same');
+  if (same) same.onclick = () => {
+    el.value = saved.name;
+    el.dispatchEvent(new Event('input', {bubbles:true}));
+  };
+  el.addEventListener('input', () => {
+    saved[k] = el.value;
+    f.classList.remove('confirmed', 'bad');
+  });
+  el.addEventListener('keydown', e => {
+    // 注音／日文等輸入法選字時也會送出 Enter，那一下不是使用者要確認的意思。
+    // 沒擋掉的話 preventDefault 會打斷輸入法，字會被重複吐出來。
+    if (e.isComposing || e.keyCode === 229) return;
+    if (e.key !== 'Enter') return;
+    if (el.tagName === 'TEXTAREA' && !e.metaKey && !e.ctrlKey) return; // 備註可換行
+    e.preventDefault();
+    if (!f.classList.contains('confirmed')){
+      f.classList.add('confirmed');           // 第一下：確認（底線消失，游標留著）
+      f.dataset.confirmedAt = Date.now();
+    } else if (Date.now() - (+f.dataset.confirmedAt || 0) > 350) {
+      submit();                                // 第二下：送出
+    }
+  });
+}
+
+/* ---------------- 送出 ---------------- */
+let sending = false;
+
+function submit(){
+  if (sending) return;
+  const need = ['name', 'line', 'store', 'recipient', 'phone'];
+  let bad = null;
+  need.forEach(k => {
+    const f = panel.querySelector('[data-f="' + k + '"]');
+    if (!f) return;
+    const ok = saved[k].trim().length > 0;
+    f.classList.toggle('bad', !ok);
+    if (!ok && !bad) bad = f;
+  });
+  if (bad){
+    bad.scrollIntoView({behavior:'smooth', block:'center'});
+    bad.querySelector('input,textarea').focus();
+    return;
+  }
+
+  const c = calc();
+  const orderNo = makeOrderNo();
+  const text = orderText(orderNo, c);
+
+  sending = true;
+  const btn = panel.querySelector('.submit');
+  if (btn){ btn.disabled = true; btn.textContent = '送出中…'; }
+
+  sendToForm(orderNo, c, text).finally(() => {
+    sending = false;
+    showDone(orderNo, text);
+  });
+}
+
+function makeOrderNo(){
+  const d = new Date();
+  const p = n => String(n).padStart(2, '0');
+  const r = String(Math.floor(Math.random() * 900) + 100);
+  return '' + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '-' + r;
+}
+
+function orderText(no, c){
+  let s = '【三支筆・文博線上補購】\n訂單編號：' + no + '\n\n';
+  for (const id in cart){
+    const it = byId[id], n = cart[id];
+    s += '· ' + groupTitle(it.cat) + '「' + it.name + '」×' + n +
+         (isPre(it) ? '（預購）' : '') + '　$' + (it.price * n) + '\n';
+  }
+  s += '\n商品小計：$' + c.sub + '\n運費：' + (c.ship ? '$' + c.ship : '免運') +
+       '\n合計：$' + c.total + '\n\n' +
+       '下單人：' + saved.name + '\nLINE：' + saved.line +
+       '\n取貨門市：' + saved.store + '\n收件人：' + saved.recipient +
+       '\n電話：' + saved.phone + '\n備註：' + (saved.note || '無');
+  if (c.hasPre) s += '\n※ 本單含預購款，預計 9 月底出貨';
+  return s;
+}
+
+function sendToForm(no, c, text){
+  const F = CONFIG.form;
+  if (!F.action) return Promise.resolve();
+  const fd = new FormData();
+  const put = (key, val) => { if (F.fields[key]) fd.append(F.fields[key], val); };
+  put('name', saved.name);
+  put('line', saved.line);
+  put('store', saved.store);
+  put('recipient', saved.recipient);
+  put('phone', saved.phone);
+  put('items', text);          // 訂單編號、明細、備註都在這一段裡
+  put('total', c.total);
+  return fetch(F.action, {method:'POST', mode:'no-cors', body:fd}).catch(() => {});
+}
+
+function showDone(no, text){
+  const connected = !!CONFIG.form.action;
+  panel.innerHTML =
+    '<div class="done">' +
+      '<h3>訂單已送出</h3>' +
+      '<div class="no"><div class="lbl">訂單編號</div>' +
+        '<div class="val">' + no + '</div>' +
+        '<div class="tip">點一下複製訂單編號和明細</div></div>' +
+      '<div class="steps"><b>接下來：</b>' +
+        '<ol>' +
+          '<li class="hi"><b>重要：</b>請點擊下方「複製訂單編號和明細」按鈕，' +
+            '再到官方 LINE 貼上回傳，一定要回傳，這邊才有辦法跟您核對訂單唷！</li>' +
+          '<li>小幫手核對訂單後，會給您匯款帳號</li>' +
+          '<li>確認收到款項後安排出貨，現貨在確認下單後<b>一週內</b>寄出；' +
+            '預購款預計 <b>9 月底</b>出貨，到時候會再用 LINE 通知您</li>' +
+        '</ol>' +
+      '</div>' +
+      '<div class="btns">' +
+        '<button class="copy">複製訂單編號和明細</button>' +
+        '<a class="primary" href="' + CONFIG.lineUrl + '" target="_blank" rel="noopener">前往官方 LINE 回傳訂單資訊</a>' +
+      '</div>' +
+    '</div>';
+  // 編號區塊和按鈕複製的是同一段文字（開頭就是訂單編號），不用分兩次複製
+  const btn = panel.querySelector('.copy');
+  const box = panel.querySelector('.no');
+  const copyAll = () => {
+    const ok = () => {
+      btn.textContent = '已複製 ✓';
+      box.classList.add('copied');
+      box.querySelector('.tip').textContent = '已複製，到 LINE 貼上就好';
+      setTimeout(() => {
+        btn.textContent = '複製訂單編號和明細';
+        box.classList.remove('copied');
+        box.querySelector('.tip').textContent = '點一下複製訂單編號和明細';
+      }, 2500);
+    };
+    if (navigator.clipboard) navigator.clipboard.writeText(text).then(ok, () => fallbackCopy(text, ok));
+    else fallbackCopy(text, ok);
+  };
+  btn.onclick = copyAll;
+  box.onclick = copyAll;
+  for (const id in cart) delete cart[id];
+  document.querySelectorAll('.card').forEach(el => {
+    const it = byId[el.id.replace('card-', '')];
+    if (it) renderCtrl(el, it);
+  });
+  updateBar();
+}
+
+function fallbackCopy(text, done){
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); done(); } catch(e) {}
+  document.body.removeChild(ta);
+}
+
+/* 捲動時同步分類按鈕：直接比對每個分類的位置，比 IntersectionObserver 可靠
+   （快速捲動或用「開始選商品」跳轉時，observer 會停在錯的分類上） */
+function setActiveTab(idx){
+  [...nav.children].forEach((b, i) => b.classList.toggle('on', i === idx));
+  // 分類多的時候把選中的按鈕捲進可視範圍
+  const btn = nav.children[idx];
+  if (btn){
+    const bar = nav.parentElement;
+    const l = btn.offsetLeft, r = l + btn.offsetWidth;
+    if (l < bar.scrollLeft + 8) bar.scrollTo({left: Math.max(0, l - 14), behavior:'smooth'});
+    else if (r > bar.scrollLeft + bar.clientWidth - 8) bar.scrollTo({left: r - bar.clientWidth + 14, behavior:'smooth'});
+  }
+}
+
+function syncNav(){
+  const line = window.scrollY + 70;          // nav 底下一點點的位置
+  let idx = 0;
+  GROUPS.forEach((g, i) => {
+    const el = document.getElementById('sec-' + g.key);
+    if (el && el.offsetTop <= line) idx = i;
+  });
+  setActiveTab(idx);
+}
+const jumpBtn = document.getElementById('jumpBtn');
+if (jumpBtn) jumpBtn.addEventListener('click', () => setActiveTab(0));
+
+let lastSync = 0;
+window.addEventListener('scroll', () => {
+  const now = Date.now();
+  if (now - lastSync < 80) return;           // 節流；不用 rAF，分頁在背景時它會被暫停
+  lastSync = now;
+  syncNav();
+}, {passive:true});
+syncNav();
+</script>
+</body>
+</html>
