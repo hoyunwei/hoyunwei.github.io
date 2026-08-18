@@ -103,7 +103,7 @@ section{padding:26px 14px 6px;scroll-margin-top:56px}
   padding:5px 8px; border-radius:999px; color:#fff; letter-spacing:.04em;
 }
 .tag.pre{background:var(--red)}
-.tag.few{background:var(--red)}
+.tag.few{background:var(--green)}
 .info{padding:10px 11px 11px;display:flex;flex-direction:column;gap:8px;flex:1}
 .nm{font-size:14px;font-weight:600;letter-spacing:.04em;line-height:1.4}
 .pr{font-size:13px;color:var(--ink-soft)}
@@ -467,9 +467,10 @@ function card(it){
   const tag = isPre(it)
     ? '<span class="tag pre">預購</span>'
     : (!it.noCount && it.stock <= CONFIG.lowStock ? '<span class="tag few">僅剩 ' + it.stock + '</span>' : '');
-  const stk = it.noCount ? (it.size || '') + ' · 現貨'
+  // 現貨不報數量（剩幾件只在左上角的「僅剩 N」標籤提醒）
+  const stk = it.noCount ? [it.size, it.dim].filter(Boolean).join(' ') + ' · 現貨'
             : isPre(it)  ? '現場完售 · 預購 9 月底出貨'
-            : '現貨 ' + it.stock + ' 件';
+            : '現貨';
   el.innerHTML =
     '<div class="thumb">' + tag + '<img src="' + it.img + '" alt="' + it.name + '" loading="lazy"></div>' +
     '<div class="info">' +
