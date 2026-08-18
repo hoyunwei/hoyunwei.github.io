@@ -339,15 +339,6 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
       <b>趁這次機會趕快補起來吧！</b></p>
   </div>
 
-  <h2>怎麼買</h2>
-  <ol class="flow">
-    <li>選好商品，點選「<b>查看訂單</b>」，金額和運費就會自動跳出來！</li>
-    <li>填寫收件明細並<b>完成匯款</b>，填上帳號後五碼後「送出訂單」，畫面就會給你訂單編號及<b>複製快捷鍵</b>。</li>
-    <li class="hi"><b>一鍵複製訂單資訊貼到官方 LINE，回傳超方便！</b>
-      <span>記得一定要回傳並告知已匯款，我們才能通知您出貨進度唷！</span></li>
-    <li>小幫手<b>核對款項</b>後就會安排出貨囉！</li>
-  </ol>
-
   <div class="notice">
     <b>▪ 庫存</b><br>
     · 商品頁上的現貨數量<b>不會即時更新</b>。如果同時選中最後一件，會以完成匯款的時間排優先順序。<br>
@@ -389,7 +380,7 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
   <div class="panel" id="panel"></div>
 </div>
 
-<script src="data/products.js?v=202608182058"></script>
+<script src="data/products.js?v=202608182106"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -452,7 +443,7 @@ function loadDraft(){
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608182058
+// data/products.js?v=202608182106
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
