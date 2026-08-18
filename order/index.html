@@ -386,7 +386,7 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
   <div class="panel" id="panel"></div>
 </div>
 
-<script src="data/products.js?v=202608182135"></script>
+<script src="data/products.js?v=202608182150"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -449,7 +449,7 @@ function loadDraft(){
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608182135
+// data/products.js?v=202608182150
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
@@ -489,11 +489,22 @@ GROUPS.forEach((g, i) => {
 function photoStrip(g){
   const wrap = document.createElement('div');
   wrap.className = 'shots';
-  const base = CONFIG.photoNames[g.key] || g.title;
+  wrap.dataset.key = g.key;
+  return wrap;                    // 內容等捲到附近才載，見 loadShots()
+}
+
+/* 照片是頁面上最重的東西（十幾張、每張近百 KB）。一開始只載第一個分類的，
+   其餘等客人捲到附近再載，不然還沒看到水晶貼就先付了它的流量。 */
+const shotsLoaded = {};
+function loadShots(key){
+  if (shotsLoaded[key]) return;
+  shotsLoaded[key] = true;
+  const g = GROUPS.find(x => x.key === key);
+  const wrap = document.querySelector('#sec-' + key + ' .shots');
+  if (!g || !wrap) return;
+  const base = CONFIG.photoNames[key] || g.title;
   const path = (i, ext) => 'photos/' + encodeURIComponent(base + '-' + i) + '.' + ext;
 
-  // 先探測檔案在不在，確定有才插進版面。這樣沒放照片的分類不會留下空框，
-  // 也不會等捲到才發現圖不存在而造成版面跳動。
   const tries = [];
   for (let i = 1; i <= CONFIG.photoMax; i++){
     tries.push(probeImg(path(i, 'jpg'))
@@ -511,7 +522,14 @@ function photoStrip(g){
     });
     if (wrap.querySelector('.shot')) wrap.classList.add('has');
   });
-  return wrap;
+}
+
+function loadNearbyShots(){
+  const line = window.scrollY + window.innerHeight * 2;   // 提早兩個畫面開始載
+  GROUPS.forEach(g => {
+    const el = document.getElementById('sec-' + g.key);
+    if (el && el.offsetTop <= line) loadShots(g.key);
+  });
 }
 
 function probeImg(src){
@@ -890,8 +908,16 @@ window.addEventListener('scroll', () => {
   if (now - lastSync < 80) return;           // 節流；不用 rAF，分頁在背景時它會被暫停
   lastSync = now;
   syncNav();
+  loadNearbyShots();
 }, {passive:true});
 syncNav();
+loadNearbyShots();
+
+// 點分類或「開始選商品」會直接跳過去，來不及等捲動事件，先把照片叫出來
+document.querySelectorAll('nav button').forEach((b, i) => {
+  b.addEventListener('click', () => loadShots(GROUPS[i].key));
+});
+if (jumpBtn) jumpBtn.addEventListener('click', () => loadShots(GROUPS[0].key));
 </script>
 </body>
 </html>
