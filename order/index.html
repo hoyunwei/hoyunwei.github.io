@@ -350,6 +350,7 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
     · 統一使用「7-11 店到店」取貨，運費 60 元，<b class="hot">單筆滿 450 元免運</b>。<br><br>
     <b>▪ 付款</b><br>
     · 匯款轉帳，帳號會在填寫訂單時提供給您，請於匯款後填入<b>帳號後五碼</b>方便核對。<br>
+    · 送出訂單後，請到官方 LINE <b>告知已匯款</b>，方便我們對帳，也才能隨時跟您更新出貨進度唷！<br>
     · 不方便馬上匯款也沒關係，後五碼可以留空先送出，匯完再到官方 LINE 補給我們。<br>
     · 本訂購表單<b>不會收取信用卡等任何付款資訊</b>。<br><br>
     <b>▪ 海報的框</b><br>
@@ -380,7 +381,7 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
   <div class="panel" id="panel"></div>
 </div>
 
-<script src="data/products.js?v=202608182106"></script>
+<script src="data/products.js?v=202608182124"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -443,7 +444,7 @@ function loadDraft(){
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608182106
+// data/products.js?v=202608182124
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
@@ -806,7 +807,7 @@ function showDone(no, text){
       '<div class="steps"><b>接下來：</b>' +
         '<ol>' +
           '<li class="hi"><b>重要：</b>請點擊下方「複製訂單編號和明細」按鈕，' +
-            '再到官方 LINE 貼上回傳並告知已匯款，我們才能在出貨時通知您唷！</li>' +
+            '再到官方 LINE 貼上並<b>告知已匯款</b>，方便我們對帳，也才能隨時跟您更新出貨進度唷！</li>' +
           '<li>小幫手核對款項。</li>' +
           '<li>確認無誤後安排出貨，現貨在確認下單後<b>一週內</b>寄出；' +
             '預購款預計 <b>9 月底</b>出貨，到時候會再用 LINE 通知您。</li>' +
