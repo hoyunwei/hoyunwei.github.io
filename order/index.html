@@ -127,6 +127,14 @@ section{padding:26px 14px 6px;scroll-margin-top:56px}
 
 /* ---------- 開頭說明區 ---------- */
 .intro{padding:22px 14px 4px;max-width:620px;margin:0 auto}
+.welcome{
+  margin:0 0 20px; padding:14px 16px; border-radius:12px;
+  background:var(--paper-2); border:1px solid var(--line);
+  font-size:13.5px; line-height:1.9; color:var(--ink-soft);
+}
+.welcome b{color:var(--ink);font-weight:600}
+.welcome b.hot{color:var(--red)}
+
 .intro h2{
   font-family:var(--serif); font-size:19px; font-weight:normal; letter-spacing:.14em;
   margin:0 0 12px; text-align:center;
@@ -319,6 +327,11 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
 </header>
 
 <div class="intro">
+  <p class="welcome">
+    為了感謝各位筆友的熱烈支持，這次 2026 文博會新品加購<b>「售價與文博會現場相同」</b>喔！<br>
+    讓大家在家吹著冷氣也能參與文博會的熱情！而且<b class="hot">單筆滿 450 元就可享免運</b>！等同線上逛文博會！
+  </p>
+
   <h2>怎麼買</h2>
   <ol class="flow">
     <li>選好商品，點選「<b>查看訂單</b>」，金額和運費就會自動跳出來！</li>
@@ -369,7 +382,7 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
   <div class="panel" id="panel"></div>
 </div>
 
-<script src="data/products.js?v=202608182042"></script>
+<script src="data/products.js?v=202608182046"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -431,7 +444,7 @@ function loadDraft(){
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608182042
+// data/products.js?v=202608182046
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
