@@ -299,11 +299,11 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
 <div class="intro">
   <h2>怎麼買</h2>
   <ol class="flow">
-    <li><b>選好商品</b>，按加入，金額和運費會自動算</li>
-    <li>填收件資料<b>送出訂單</b>，畫面會給你一組訂單編號</li>
-    <li class="hi"><b>把訂單編號和明細傳到官方 LINE</b>
-      <span>這一步沒做，訂單不算成立，我這邊無法跟你核對</span></li>
-    <li>我核對後給你<b>匯款帳號</b>，收到款項才安排出貨</li>
+    <li><b>選好商品</b>，按加入，金額和運費會自動算。</li>
+    <li>填收件資料<b>送出訂單</b>，畫面會給你一組訂單編號。</li>
+    <li class="hi"><b>把訂單編號傳到官方 LINE。</b>
+      <span>這一步很重要！回傳後訂單才算成立唷！</span></li>
+    <li>小幫手核對後給您<b>匯款帳號</b>，收到款項後安排出貨。</li>
   </ol>
 
   <div class="notice">
@@ -344,7 +344,7 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
   <div class="panel" id="panel"></div>
 </div>
 
-<script src="data/products.js?v=202608181536"></script>
+<script src="data/products.js?v=202608181551"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -377,7 +377,7 @@ const CONFIG = {
 /* ---------------- 狀態 ---------------- */
 const cart = {};                       // id -> 數量
 const byId = {};
-// data/products.js?v=202608181536
+// data/products.js?v=202608181551
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
