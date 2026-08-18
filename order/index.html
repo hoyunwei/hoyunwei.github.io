@@ -217,6 +217,27 @@ section{padding:26px 14px 6px;scroll-margin-top:56px}
 .freehint{font-size:12px;color:var(--olive);padding:6px 0}
 .freehint.hot{color:var(--red);font-weight:600;font-size:13px}
 
+/* ---------- 結帳頁的匯款資訊 ---------- */
+.bank{
+  margin:16px 0 4px; background:var(--paper-2); border:1px solid var(--line);
+  border-radius:12px; padding:14px 16px;
+}
+.bank-t{text-align:center;font-size:14px;letter-spacing:.12em;color:var(--ink);margin-bottom:10px}
+.bank-amt{
+  text-align:center; font-size:14px; color:var(--ink-soft);
+  padding-bottom:10px; margin-bottom:10px; border-bottom:1px solid var(--line);
+}
+.bank-amt b{font-size:24px;color:var(--red);margin-left:6px;letter-spacing:.02em}
+.bank-row{display:flex;align-items:center;gap:10px;font-size:13.5px;padding:3px 0}
+.bank-row span{color:var(--ink-soft);flex:0 0 62px}
+.bank-row b{font-weight:600;letter-spacing:.04em}
+.bank-row .acc{font-size:16px}
+.bank-row .copyacc{
+  margin-left:auto; border:1px solid var(--ink); background:#fff; color:var(--ink);
+  border-radius:999px; padding:4px 12px; font-size:12px;
+}
+.bank-tip{font-size:11.5px;line-height:1.6;color:var(--ink-soft);margin-top:8px}
+
 .field{margin:22px 0}
 .field label{display:block;font-size:12.5px;color:var(--ink-soft);margin-bottom:4px;letter-spacing:.04em}
 .field label .req{color:var(--red);margin-left:3px}
@@ -301,10 +322,10 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
   <h2>怎麼買</h2>
   <ol class="flow">
     <li><b>選好商品</b>，按加入，金額和運費會自動算。</li>
-    <li>填收件資料<b>送出訂單</b>，畫面會給你一組訂單編號。</li>
-    <li class="hi"><b>把訂單編號傳到官方 LINE。</b>
-      <span>這一步很重要！回傳後訂單才算成立唷！</span></li>
-    <li>小幫手核對後給您<b>匯款帳號</b>，收到款項後安排出貨。</li>
+    <li>填收件資料，<b>同時完成匯款</b>，並填上帳號後五碼。</li>
+    <li class="hi"><b>送出訂單後，到官方 LINE 回傳已匯款。</b>
+      <span>這一步很重要！出貨進度會用 LINE 通知您唷！</span></li>
+    <li>小幫手<b>核對款項</b>後安排出貨。</li>
   </ol>
 
   <div class="notice">
@@ -316,7 +337,8 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
     · 同一筆訂單如果現貨和預購都有，會等預購印好一起寄。<br>
     · 統一使用「7-11 店到店」取貨，運費 60 元，<b class="hot">單筆滿 450 元免運</b>。<br><br>
     <b>▪ 付款</b><br>
-    · 匯款轉帳，帳號會在官方 LINE 核對訂單時提供給您，<b>這個網頁不收任何付款資訊</b>。<br><br>
+    · 匯款轉帳，帳號在填寫訂單時會顯示，請於匯款後填入<b>帳號後五碼</b>方便核對。<br>
+    · 不方便馬上匯款也沒關係，後五碼可以留空先送出，匯完再到官方 LINE 補給我們。<br><br>
     <b>▪ 海報的框</b><br>
     · 這裡只賣海報本身，不含框。A4 海報及明信片皆可選用 IKEA 畫框，就會是攤位上看到的樣子，詳細規格可私訊官方 LINE。
   </div>
@@ -345,7 +367,7 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
   <div class="panel" id="panel"></div>
 </div>
 
-<script src="data/products.js?v=202608181732"></script>
+<script src="data/products.js?v=202608182034"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -354,6 +376,8 @@ const CONFIG = {
   shipFee: 60,          // 宅配運費
   freeShipOver: 450,    // 滿額免運門檻
   lineUrl: 'https://lin.ee/v7pysVk',
+  // 匯款資訊：顯示在結帳頁，客人可以當場轉帳
+  bank: {code:'812 台新銀行', account:'28881017280464'},
   lowStock: 3,          // 剩幾件以下顯示「僅剩 N 件」
   // 每個分類開頭的實拍照：把檔案放進 photos/，命名成「分類名-1.jpg」「分類名-2.jpg」⋯⋯
   // 有幾張就放幾張（最多 6 張），沒放的自動不顯示，不用改這裡的程式
@@ -378,7 +402,34 @@ const CONFIG = {
 /* ---------------- 狀態 ---------------- */
 const cart = {};                       // id -> 數量
 const byId = {};
-// data/products.js?v=202608181732
+const saved = {name:'', line:'', recipient:'', phone:'', store:'', last5:'', note:''};
+const DRAFT_KEY = 'penpen-order-draft';
+
+/* 客人會切到銀行 App 匯款，回來時手機瀏覽器常常已經把頁面重載了。
+   購物車和填到一半的資料存在瀏覽器裡，回來才不會全部不見。 */
+function saveDraft(){
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({cart, saved, t: Date.now()}));
+  } catch (e) {}
+}
+
+function loadDraft(){
+  let d;
+  try { d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch (e) { return; }
+  if (!d || !d.t || Date.now() - d.t > 3 * 24 * 3600 * 1000) return;   // 放超過三天就不要了
+  Object.keys(d.saved || {}).forEach(k => { if (k in saved) saved[k] = d.saved[k]; });
+  Object.entries(d.cart || {}).forEach(([id, n]) => {
+    const it = byId[id];
+    if (!it) return;                                  // 商品已下架就跳過
+    const max = (isPre(it) || it.noCount) ? n : Math.min(n, it.stock);
+    if (max > 0) cart[id] = max;                      // 庫存變少了就跟著調
+  });
+}
+
+function clearDraft(){
+  try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+}
+// data/products.js?v=202608182034
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
@@ -510,6 +561,7 @@ function setQty(id, n){
   if (n === 0) delete cart[id]; else cart[id] = n;
   renderCtrl(document.getElementById('card-' + id), it);
   updateBar();
+  saveDraft();
   if (document.getElementById('sheet').classList.contains('open')) openSheet();
 }
 
@@ -534,6 +586,13 @@ function updateBar(){
     '$' + c.total + (c.count && c.ship ? '<small>差 $' + (CONFIG.freeShipOver - c.sub) + ' 免運</small>' : '');
   document.getElementById('goBtn').disabled = c.count === 0;
 }
+
+/* 恢復上次沒送完的購物車（例如切去銀行 App 匯款後又切回來） */
+loadDraft();
+Object.keys(cart).forEach(id => {
+  const el = document.getElementById('card-' + id);
+  if (el) renderCtrl(el, byId[id]);
+});
 updateBar();
 
 /* ---------------- 結帳 ---------------- */
@@ -542,7 +601,6 @@ const panel = document.getElementById('panel');
 document.getElementById('goBtn').onclick = openSheet;
 sheet.onclick = e => { if (e.target === sheet) sheet.classList.remove('open'); };
 
-const saved = {name:'', line:'', recipient:'', phone:'', store:'', note:''};
 
 function openSheet(){
   const c = calc();
@@ -568,11 +626,20 @@ function openSheet(){
     '</div>' +
     (c.ship ? '<div class="freehint hot">再買 $' + (CONFIG.freeShipOver - c.sub) + ' 就免運了</div>' : '') +
     (c.hasPre ? '<div class="freehint">這筆有預購款，會等重新印好一起寄，預計 9 月底出貨</div>' : '') +
+    '<div class="bank">' +
+      '<div class="bank-t">✦ 匯款資訊 ✦</div>' +
+      '<div class="bank-amt">應付金額　<b>$' + c.total + '</b></div>' +
+      '<div class="bank-row"><span>銀行代碼</span><b>' + CONFIG.bank.code + '</b></div>' +
+      '<div class="bank-row"><span>匯款帳號</span><b class="acc">' + CONFIG.bank.account + '</b>' +
+        '<button type="button" class="copyacc">複製</button></div>' +
+      '<div class="bank-tip">請匯款後在下方填寫帳號後五碼，方便小幫手核對。</div>' +
+    '</div>' +
     field('name', '你的姓名', true, '') +
     field('line', 'LINE 顯示名稱', true, '要用這個跟你核對訂單、通知出貨') +
     field('store', '7-11 取貨門市', true, '請填店號和店名，例如 123456 光復門市') +
     field('recipient', '收件人姓名', true, '請填正確姓名，取貨要對', false, true) +
     field('phone', '收件人電話', true, '') +
+    field('last5', '匯款帳號後五碼', false, '已匯款請填，稍後匯款可以留空，匯完到官方 LINE 補給我們就好') +
     field('note', '備註', false, '想先收現貨、或其他需求都寫這裡', true) +
     '<button class="submit">送出訂單</button>';
 
@@ -580,6 +647,12 @@ function openSheet(){
   panel.querySelectorAll('.del').forEach(b => b.onclick = () => setQty(b.dataset.id, 0));
   panel.querySelectorAll('.field').forEach(wireField);
   panel.querySelector('.submit').onclick = submit;
+  const accBtn = panel.querySelector('.copyacc');
+  if (accBtn) accBtn.onclick = () => {
+    const done = () => { accBtn.textContent = '已複製'; setTimeout(() => accBtn.textContent = '複製', 2000); };
+    if (navigator.clipboard) navigator.clipboard.writeText(CONFIG.bank.account).then(done, () => fallbackCopy(CONFIG.bank.account, done));
+    else fallbackCopy(CONFIG.bank.account, done);
+  };
   sheet.classList.add('open');
 }
 
@@ -612,6 +685,7 @@ function wireField(f){
   el.addEventListener('input', () => {
     saved[k] = el.value;
     f.classList.remove('confirmed', 'bad');
+    saveDraft();
   });
   el.addEventListener('keydown', e => {
     // 注音／日文等輸入法選字時也會送出 Enter，那一下不是使用者要確認的意思。
@@ -682,7 +756,9 @@ function orderText(no, c){
        '\n合計：$' + c.total + '\n\n' +
        '下單人：' + saved.name + '\nLINE：' + saved.line +
        '\n取貨門市：' + saved.store + '\n收件人：' + saved.recipient +
-       '\n電話：' + saved.phone + '\n備註：' + (saved.note || '無');
+       '\n電話：' + saved.phone +
+       '\n匯款後五碼：' + (saved.last5 || '（稍後補）') +
+       '\n備註：' + (saved.note || '無');
   if (c.hasPre) s += '\n※ 本單含預購款，預計 9 月底出貨';
   return s;
 }
@@ -698,6 +774,7 @@ function sendToForm(no, c, text){
   put('store', saved.store);
   put('recipient', saved.recipient);
   put('phone', saved.phone);
+  put('last5', saved.last5);   // 表單加了「匯款後五碼」欄位就會獨立送，沒加也在明細裡
   put('items', text);          // 訂單編號、明細、備註都在這一段裡
   put('total', c.total);
   return fetch(F.action, {method:'POST', mode:'no-cors', body:fd}).catch(() => {});
@@ -714,10 +791,10 @@ function showDone(no, text){
       '<div class="steps"><b>接下來：</b>' +
         '<ol>' +
           '<li class="hi"><b>重要：</b>請點擊下方「複製訂單編號和明細」按鈕，' +
-            '再到官方 LINE 貼上回傳，一定要回傳，這邊才有辦法跟您核對訂單唷！</li>' +
-          '<li>小幫手核對訂單後，會給您匯款帳號</li>' +
-          '<li>確認收到款項後安排出貨，現貨在確認下單後<b>一週內</b>寄出；' +
-            '預購款預計 <b>9 月底</b>出貨，到時候會再用 LINE 通知您</li>' +
+            '再到官方 LINE 貼上回傳並告知已匯款，我們才能在出貨時通知您唷！</li>' +
+          '<li>小幫手核對款項。</li>' +
+          '<li>確認無誤後安排出貨，現貨在確認下單後<b>一週內</b>寄出；' +
+            '預購款預計 <b>9 月底</b>出貨，到時候會再用 LINE 通知您。</li>' +
         '</ol>' +
       '</div>' +
       '<div class="btns">' +
@@ -747,6 +824,8 @@ function showDone(no, text){
   btn.onclick = copyAll;
   box.onclick = copyAll;
   for (const id in cart) delete cart[id];
+  Object.keys(saved).forEach(k => saved[k] = '');
+  clearDraft();
   document.querySelectorAll('.card').forEach(el => {
     const it = byId[el.id.replace('card-', '')];
     if (it) renderCtrl(el, it);
