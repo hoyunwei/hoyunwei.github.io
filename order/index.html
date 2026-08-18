@@ -55,6 +55,13 @@ section{padding:26px 14px 6px;scroll-margin-top:56px}
 .sec-head .spec{order:3;flex-basis:100%;font-size:12.5px;line-height:1.6;color:var(--ink-soft);margin-top:-2px}
 .sec-head .price{margin-left:auto;font-size:14px;color:var(--red);font-weight:600}
 
+/* 設計理念：跟規格明顯區隔，字大半級、行距鬆，不然客人會當成規格跳過 */
+.idea{
+  margin:0 4px 18px; font-size:13.5px; line-height:2; color:var(--ink-soft);
+  padding-left:12px; border-left:2px solid var(--line);
+}
+.idea b{color:var(--ink);font-weight:600;letter-spacing:.04em}
+
 /* ---------- 分類開頭的實拍照 ---------- */
 .shots{display:none}
 .shots.has{
@@ -386,7 +393,7 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
   <div class="panel" id="panel"></div>
 </div>
 
-<script src="data/products.js?v=202608182150"></script>
+<script src="data/products.js?v=202608182211"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -449,7 +456,7 @@ function loadDraft(){
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608182150
+// data/products.js?v=202608182211
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
@@ -474,13 +481,19 @@ GROUPS.forEach((g, i) => {
   const prices = [...new Set(g.items.map(it => it.price))].sort((a,b)=>a-b);
   sec.innerHTML =
     '<div class="sec-head"><h2>' + g.title + '</h2>' +
-    (g.spec ? '<span class="spec">' + g.spec + '</span>' : '') +
+    (g.spec ? '<span class="spec"><b>規格｜</b>' + g.spec + '</span>' : '') +
     '<span class="price">' + (prices.length > 1 ? '$' + prices[0] + '–' + prices[prices.length-1] : '$' + prices[0]) + '</span></div>' +
     '<div class="grid" id="grid-' + g.key + '"></div>';
   secs.appendChild(sec);
-  sec.insertBefore(photoStrip(g), sec.querySelector('.grid'));   // 實拍照放在商品格線上面
-
   const grid = sec.querySelector('.grid');
+  sec.insertBefore(photoStrip(g), grid);        // 實拍照放在商品格線上面
+  if (g.idea){                                   // 設計理念接在照片後面，跟規格分開
+    const idea = document.createElement('p');
+    idea.className = 'idea';
+    idea.innerHTML = '<b>設計理念｜</b>' + g.idea;
+    sec.insertBefore(idea, grid);
+  }
+
   g.items.forEach(it => grid.appendChild(card(it)));
 });
 
