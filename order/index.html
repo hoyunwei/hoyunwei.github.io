@@ -389,7 +389,7 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
   <div class="panel" id="panel"></div>
 </div>
 
-<script src="data/products.js?v=202608182053"></script>
+<script src="data/products.js?v=202608182058"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -415,6 +415,7 @@ const CONFIG = {
       store:     'entry.1858551510',   // 7-11收件店號、店名
       recipient: 'entry.2105812999',   // 收件姓名
       phone:     'entry.113790661',    // 收件電話
+      last5:     'entry.1738359045',   // 匯款帳號後五碼（表單設必填，留空會整筆被擋，所以空值改送提示字）
       items:     'entry.1515194948',   // 訂單明細（開頭也帶編號，客人貼到 LINE 時看得到）
       total:     'entry.152988990'     // 總金額
     }
@@ -451,7 +452,7 @@ function loadDraft(){
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608182053
+// data/products.js?v=202608182058
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
@@ -796,7 +797,8 @@ function sendToForm(no, c, text){
   put('store', saved.store);
   put('recipient', saved.recipient);
   put('phone', saved.phone);
-  put('last5', saved.last5);   // 表單加了「匯款後五碼」欄位就會獨立送，沒加也在明細裡
+  // 表單那題是必填，空字串會讓整筆被退回（而且前端收不到錯誤），所以一定要給值
+  put('last5', saved.last5.trim() || '稍後匯款');
   put('items', text);          // 訂單編號、明細、備註都在這一段裡
   put('total', c.total);
   return fetch(F.action, {method:'POST', mode:'no-cors', body:fd}).catch(() => {});
