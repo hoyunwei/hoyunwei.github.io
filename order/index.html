@@ -71,7 +71,9 @@ section{padding:26px 14px 6px;scroll-margin-top:56px}
   height:200px; width:auto; max-width:none; flex:0 0 auto;
   border-radius:10px; border:1px solid var(--line); background:var(--paper-2);
   object-fit:cover; scroll-snap-align:start; cursor:zoom-in;
+  animation:fadein .25s ease-out;              /* 載進來時淡入，不會突然跳出 */
 }
+@keyframes fadein{from{opacity:0}to{opacity:1}}
 .shot:only-child{width:100%;height:auto;max-height:340px;object-fit:cover}
 @media(min-width:620px){.shot{height:260px}}
 
@@ -390,7 +392,7 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
   <div class="panel" id="panel"></div>
 </div>
 
-<script src="data/products.js?v=202608182226"></script>
+<script src="data/products.js?v=202608182231"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -453,7 +455,7 @@ function loadDraft(){
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608182226
+// data/products.js?v=202608182231
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
@@ -538,7 +540,7 @@ function loadShots(key){
 }
 
 function loadNearbyShots(){
-  const line = window.scrollY + window.innerHeight * 2;   // 提早兩個畫面開始載
+  const line = window.scrollY + window.innerHeight * 3;   // 提早三個畫面開始載，捲到時圖已經在了
   GROUPS.forEach(g => {
     const el = document.getElementById('sec-' + g.key);
     if (el && el.offsetTop <= line) loadShots(g.key);
