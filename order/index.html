@@ -96,6 +96,19 @@ section{padding:26px 14px 6px;scroll-margin-top:56px}
 @media(min-width:900px){.grid{grid-template-columns:repeat(4,1fr)}
   section{max-width:1080px;margin:0 auto}}
 
+/* ---------- 商品載入中 / 載入失敗 ---------- */
+.loading{
+  padding:70px 24px; text-align:center; color:var(--ink-soft);
+  font-size:15px; line-height:1.9;
+}
+.loading span{display:block; margin-top:6px; font-size:13px}
+.loading.fail{color:var(--red); font-weight:600}
+.loading.fail span{color:var(--ink-soft); font-weight:400}
+.loading.fail button{
+  margin-top:16px; padding:11px 26px; font-size:15px; font-family:inherit;
+  color:#fff; background:var(--red); border:0; border-radius:999px; cursor:pointer;
+}
+
 /* ---------- 商品卡 ---------- */
 .card{
   background:#fff; border:1px solid var(--line); border-radius:10px;
@@ -397,7 +410,7 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
 
 <nav><div class="inner" id="nav"></div></nav>
 
-<div id="sections"></div>
+<div id="sections"><div class="loading" id="loading">商品載入中…<span>第一次開啟大約需要幾秒</span></div></div>
 
 <footer>
   三支筆工作室　·　有任何問題請洽官方 LINE<br>
@@ -416,7 +429,7 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
   <div class="panel" id="panel"></div>
 </div>
 
-<script src="data/products.js?v=202608191034"></script>
+<script src="data/products.js?v=202608191047"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -465,7 +478,18 @@ if (closed){
     '</div>';
 }
 
-if (!closed) {
+/* ---------------- 商品資料沒載到就講清楚 ----------------
+   products.js 有 1 MB，手機網路不穩時可能下載到一半就斷。
+   以前這種情況整頁只剩說明文字、商品區一片空白，客人不知道發生什麼事。 */
+const dataOk = typeof PRODUCT_GROUPS !== 'undefined' && Array.isArray(PRODUCT_GROUPS);
+if (!closed && !dataOk){
+  document.getElementById('sections').innerHTML =
+    '<div class="loading fail">商品沒有載入成功<br>' +
+      '<span>可能是網路不穩，按下面的按鈕再試一次</span>' +
+      '<button onclick="location.reload()">重新載入</button></div>';
+}
+
+if (!closed && dataOk) {
 
 /* ---------------- 狀態 ---------------- */
 const cart = {};                       // id -> 數量
@@ -497,7 +521,7 @@ function loadDraft(){
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608191034
+// data/products.js?v=202608191047
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
@@ -506,6 +530,7 @@ const isPre = it => it.stock === 0 && !it.noCount;
 /* ---------------- 畫商品 ---------------- */
 const nav = document.getElementById('nav');
 const secs = document.getElementById('sections');
+secs.innerHTML = '';                      // 資料到了，把「載入中」收掉
 
 GROUPS.forEach((g, i) => {
   const b = document.createElement('button');
