@@ -472,7 +472,7 @@ window.onerror = function(msg, src, line, col){
   } catch (e) {}
 };
 </script>
-<script src="data/products.js?v=202608191417"></script>
+<script src="data/products.js?v=202608192113"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -570,7 +570,7 @@ function loadDraft(){
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608191417
+// data/products.js?v=202608192113
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
