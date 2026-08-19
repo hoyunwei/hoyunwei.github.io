@@ -310,6 +310,7 @@ section{padding:26px 14px 6px;scroll-margin-top:56px}
 .field textarea{resize:vertical;min-height:62px;line-height:1.6}
 .field .hint{font-size:11.5px;color:var(--ink-faint);margin-top:3px;line-height:1.5}
 .field.bad input,.field.bad textarea{border-bottom-color:var(--red)}
+.field.bad .hint{color:var(--red)}
 
 .submit{
   width:100%; margin-top:18px; background:var(--ink); color:#fff; border:none;
@@ -456,7 +457,7 @@ window.onerror = function(msg, src, line, col){
   } catch (e) {}
 };
 </script>
-<script src="data/products.js?v=202608191101"></script>
+<script src="data/products.js?v=202608191106"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -484,6 +485,7 @@ const CONFIG = {
       store:     'entry.1858551510',   // 7-11收件店號、店名
       recipient: 'entry.2105812999',   // 收件姓名
       phone:     'entry.113790661',    // 收件電話
+      email:     '',                   // Email（選填）※ 等小何在表單加好那一題，把代碼填進來就會開始送
       last5:     'entry.1738359045',   // 匯款帳號後五碼（表單設必填，留空會整筆被擋，所以空值改送提示字）
       items:     'entry.1515194948',   // 訂單明細（開頭也帶編號，客人貼到 LINE 時看得到）
       total:     'entry.152988990'     // 總金額
@@ -525,7 +527,7 @@ function main() {
 /* ---------------- 狀態 ---------------- */
 const cart = {};                       // id -> 數量
 const byId = {};
-const saved = {name:'', line:'', recipient:'', phone:'', store:'', last5:'', note:''};
+const saved = {name:'', line:'', email:'', recipient:'', phone:'', store:'', last5:'', note:''};
 const DRAFT_KEY = 'penpen-order-draft';
 
 /* 客人會切到銀行 App 匯款，回來時手機瀏覽器常常已經把頁面重載了。
@@ -552,7 +554,7 @@ function loadDraft(){
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608191101
+// data/products.js?v=202608191106
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
@@ -795,6 +797,7 @@ function openSheet(){
     '</div>' +
     field('name', '你的姓名', true, '') +
     field('line', 'LINE 顯示名稱', true, '用於核對訂單以及通知出貨') +
+    field('email', 'Email', false, '選填，未來有新品或活動會通知您', false, false, 'email') +
     field('store', '7-11 取貨門市', true, '為避免相似店名填寫有誤，請填店號和店名，例如 123456 光復門市') +
     field('recipient', '收件人姓名', true, '請填寫您的正確姓名，取貨時 7-11 會需要核對身分', false, true) +
     field('phone', '收件人電話', true, '') +
@@ -820,11 +823,15 @@ function groupTitle(key){
   return g ? g.title : '';
 }
 
-function field(k, label, req, hint, area, sameAsBuyer){
+function field(k, label, req, hint, area, sameAsBuyer, type){
   const v = saved[k].replace(/"/g, '&quot;');
+  // type="email" 讓手機跳出帶 @ 的鍵盤；關掉自動大寫，不然 iPhone 會把開頭變大寫
+  const attr = type === 'email'
+    ? ' type="email" inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false"'
+    : '';
   const input = area
     ? '<textarea data-k="' + k + '">' + saved[k] + '</textarea>'
-    : '<input data-k="' + k + '" value="' + v + '">';
+    : '<input data-k="' + k + '"' + attr + ' value="' + v + '">';
   return '<div class="field" data-f="' + k + '"><label>' + label +
     (req ? '<span class="req">*</span>' : '') +
     (sameAsBuyer ? '<button type="button" class="same">＝ 同上</button>' : '') +
@@ -841,9 +848,12 @@ function wireField(f){
     el.value = saved.name;
     el.dispatchEvent(new Event('input', {bubbles:true}));
   };
+  const hint = f.querySelector('.hint');
+  if (hint) hint.dataset.orig = hint.textContent;   // 錯誤訊息會蓋掉原本的說明，記著等一下還原
   el.addEventListener('input', () => {
     saved[k] = el.value;
     f.classList.remove('confirmed', 'bad');
+    if (hint && hint.dataset.orig) hint.textContent = hint.dataset.orig;
     saveDraft();
   });
   el.addEventListener('keydown', e => {
@@ -876,6 +886,18 @@ function submit(){
     f.classList.toggle('bad', !ok);
     if (!ok && !bad) bad = f;
   });
+  // Email 是選填，但填了就檢查一下，打錯了等於找不到人
+  const mail = saved.email.trim();
+  if (!bad && mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)){
+    const f = panel.querySelector('[data-f="email"]');
+    if (f){
+      f.classList.add('bad');
+      const h = f.querySelector('.hint');
+      if (h) h.textContent = 'Email 看起來不太對，請再檢查一次（不想留可以整格清空）';
+      bad = f;
+    }
+  }
+
   if (bad){
     bad.scrollIntoView({behavior:'smooth', block:'center'});
     bad.querySelector('input,textarea').focus();
@@ -915,6 +937,7 @@ function orderText(no, c){
   s += '\n商品小計：$' + c.sub + '\n運費：' + (c.ship ? '$' + c.ship : '免運') +
        '\n合計：$' + c.total + '\n\n' +
        '下單人：' + saved.name + '\nLINE：' + saved.line +
+       (saved.email.trim() ? '\nEmail：' + saved.email.trim() : '') +
        '\n取貨門市：' + saved.store + '\n收件人：' + saved.recipient +
        '\n電話：' + saved.phone +
        '\n匯款後五碼：' + (saved.last5 || '（稍後補）') +
@@ -934,6 +957,7 @@ function sendToForm(no, c, text){
   put('store', saved.store);
   put('recipient', saved.recipient);
   put('phone', saved.phone);
+  put('email', saved.email.trim());   // 表單那題還沒接好時 fields.email 是空字串，這行會自動跳過
   // 表單那題是必填，空字串會讓整筆被退回（而且前端收不到錯誤），所以一定要給值
   put('last5', saved.last5.trim() || '稍後匯款');
   put('items', text);          // 訂單編號、明細、備註都在這一段裡
