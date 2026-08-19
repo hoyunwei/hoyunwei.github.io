@@ -452,7 +452,7 @@ window.onerror = function(msg, src, line, col){
   } catch (e) {}
 };
 </script>
-<script src="data/products.js?v=202608191121"></script>
+<script src="data/products.js?v=202608191123"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -550,7 +550,7 @@ function loadDraft(){
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608191121
+// data/products.js?v=202608191123
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
@@ -792,7 +792,7 @@ function openSheet(){
       '<div class="bank-tip">請匯款後在下方填寫帳號後五碼，方便小幫手核對。</div>' +
     '</div>' +
     field('line', 'LINE 顯示名稱', true, '用於核對訂單以及通知出貨') +
-    field('email', 'Email', false, '選填，未來有新品或活動會通知您', false, 'email') +
+    field('email', 'Email', false, '選填，萬一 LINE 聯絡不上，我們會改用 Email 找您', false, 'email') +
     field('store', '7-11 取貨門市', true, '為避免相似店名填寫有誤，請填店號和店名，例如 123456 光復門市') +
     field('recipient', '收件人姓名', true, '請填寫您的正確姓名，取貨時 7-11 會需要核對身分') +
     field('phone', '收件人電話', true, '') +
