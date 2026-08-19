@@ -448,7 +448,7 @@ window.onerror = function(msg, src, line, col){
   } catch (e) {}
 };
 </script>
-<script src="data/products.js?v=202608191052"></script>
+<script src="data/products.js?v=202608191058"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -508,7 +508,11 @@ if (!closed && !dataOk){
       '<button onclick="location.reload()">重新載入</button></div>';
 }
 
-if (!closed && dataOk) {
+/* 整段主程式包成一個函式再呼叫，不能直接寫成 if (...) { ... }。
+   iPhone 的 Safari 對「函式宣告在 if 區塊裡」的規則比 Chrome 嚴格，
+   會讓 card() 找不到同一個區塊裡的 isPre，整批商品畫不出來。
+   包成函式之後兩邊行為就一致了。（2026-08-19 手機全空白的原因） */
+function main() {
 
 /* ---------------- 狀態 ---------------- */
 const cart = {};                       // id -> 數量
@@ -540,7 +544,7 @@ function loadDraft(){
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608191052
+// data/products.js?v=202608191058
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
@@ -1027,13 +1031,16 @@ window.addEventListener('scroll', () => {
 syncNav();
 loadNearbyShots();
 
-}   // 截止後這一整段都不執行
-
 // 點分類或「開始選商品」會直接跳過去，來不及等捲動事件，先把照片叫出來
 document.querySelectorAll('nav button').forEach((b, i) => {
   b.addEventListener('click', () => loadShots(GROUPS[i].key));
 });
 if (jumpBtn) jumpBtn.addEventListener('click', () => loadShots(GROUPS[0].key));
+
+}   // main() 到此結束
+
+// 截止了、或商品資料沒載到，就不跑主程式
+if (!closed && dataOk) main();
 </script>
 </body>
 </html>
