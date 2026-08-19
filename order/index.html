@@ -33,6 +33,10 @@ header h1{
   letter-spacing:.1em; line-height:1.55; margin:0;
 }
 @media(min-width:620px){header h1{font-size:27px}}
+header .deadline{
+  margin:14px 0 0; font-size:14px; font-weight:600; letter-spacing:.04em;
+  color:var(--red); line-height:1.7;
+}
 
 /* ---------- 分類導覽 ---------- */
 nav{
@@ -358,6 +362,7 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
 
 <header>
   <h1>三支筆工作室｜2026文博會新品線上購</h1>
+  <p class="deadline">✨ 加購只到 8/31（日）晚上 23:59！</p>
 </header>
 
 <div class="intro">
@@ -411,7 +416,7 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
   <div class="panel" id="panel"></div>
 </div>
 
-<script src="data/products.js?v=202608191030"></script>
+<script src="data/products.js?v=202608191034"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -492,7 +497,7 @@ function loadDraft(){
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608191030
+// data/products.js?v=202608191034
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
