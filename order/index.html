@@ -130,6 +130,10 @@ section{padding:26px 14px 6px;scroll-margin-top:56px}
   overflow:hidden; display:flex; flex-direction:column;
 }
 .card.picked{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+/* 售完：整張卡淡掉，看得到但買不了 */
+.card.soldout{opacity:.45}
+.card.soldout .add{border-color:var(--line);color:var(--ink-faint);cursor:not-allowed}
+.card.soldout .add:hover{background:#fff;color:var(--ink-faint)}
 .thumb{
   position:relative; height:170px; background:var(--paper-2);
   display:flex; align-items:center; justify-content:center; padding:10px;
@@ -142,6 +146,7 @@ section{padding:26px 14px 6px;scroll-margin-top:56px}
 }
 .tag.pre{background:var(--red)}
 .tag.few{background:var(--green)}
+.tag.out{background:var(--ink-faint)}
 .info{padding:10px 11px 11px;display:flex;flex-direction:column;gap:8px;flex:1}
 .nm{font-size:14px;font-weight:600;letter-spacing:.04em;line-height:1.4}
 .pr{font-size:13px;color:var(--ink-soft)}
@@ -467,7 +472,7 @@ window.onerror = function(msg, src, line, col){
   } catch (e) {}
 };
 </script>
-<script src="data/products.js?v=202608191251"></script>
+<script src="data/products.js?v=202608191417"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -556,7 +561,7 @@ function loadDraft(){
   Object.keys(d.saved || {}).forEach(k => { if (k in saved) saved[k] = d.saved[k]; });
   Object.entries(d.cart || {}).forEach(([id, n]) => {
     const it = byId[id];
-    if (!it) return;                                  // 商品已下架就跳過
+    if (!it || it.soldout) return;                    // 商品已下架或售完就跳過
     const max = (isPre(it) || it.noCount) ? n : Math.min(n, it.stock);
     if (max > 0) cart[id] = max;                      // 庫存變少了就跟著調
   });
@@ -565,11 +570,12 @@ function loadDraft(){
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608191251
+// data/products.js?v=202608191417
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
-const isPre = it => it.stock === 0 && !it.noCount;
+// soldout = 賣完了也不補印，卡片會淡掉且不能加購（要跟「預購」分開）
+const isPre = it => it.stock === 0 && !it.noCount && !it.soldout;
 
 /* ---------------- 畫商品 ---------------- */
 const nav = document.getElementById('nav');
@@ -688,11 +694,16 @@ function card(it){
   const el = document.createElement('div');
   el.className = 'card';
   el.id = 'card-' + it.id;
-  const tag = isPre(it)
+  if (it.soldout) el.classList.add('soldout');
+  const tag = it.soldout
+    ? '<span class="tag out">售完</span>'
+    : isPre(it)
     ? '<span class="tag pre">預購</span>'
     : (!it.noCount && it.stock <= CONFIG.lowStock ? '<span class="tag few">僅剩 ' + it.stock + '</span>' : '');
   // 現貨不報數量（剩幾件只在左上角的「僅剩 N」標籤提醒）
-  const stk = it.noCount ? [it.size, it.dim].filter(Boolean).join(' ') + ' · 現貨'
+  // 售完的卡片按鈕已經寫「已售完」，這行再寫一次是重複
+  const stk = it.soldout ? ''
+            : it.noCount ? [it.size, it.dim].filter(Boolean).join(' ') + ' · 現貨'
             : isPre(it)  ? '現場完售 · 預購 9 月底出貨'
             : '現貨';
   el.innerHTML =
@@ -701,7 +712,7 @@ function card(it){
       '<div class="nm">' + it.name + '</div>' +
       '<div class="pr"><b>$' + it.price + '</b></div>' +
       (it.note ? '<div class="note">' + it.note + '</div>' : '') +
-      '<div class="stk">' + stk + '</div>' +
+      (stk ? '<div class="stk">' + stk + '</div>' : '') +
       '<div class="ctrl"></div>' +
     '</div>';
   renderCtrl(el, it);
@@ -711,7 +722,9 @@ function card(it){
 function renderCtrl(el, it){
   const box = el.querySelector('.ctrl');
   const n = cart[it.id] || 0;
-  if (n === 0){
+  if (it.soldout){
+    box.innerHTML = '<button class="add" disabled>已售完</button>';
+  } else if (n === 0){
     box.innerHTML = '<button class="add">加入</button>';
     box.querySelector('.add').onclick = () => setQty(it.id, 1);
   } else {
@@ -728,6 +741,7 @@ function renderCtrl(el, it){
 
 function setQty(id, n){
   const it = byId[id];
+  if (it.soldout) return;                    // 售完的東西不進購物車
   if (!isPre(it) && !it.noCount) n = Math.min(n, it.stock);
   n = Math.max(0, n);
   if (n === 0) delete cart[id]; else cart[id] = n;
