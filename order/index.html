@@ -182,6 +182,26 @@ section{padding:26px 14px 6px;scroll-margin-top:56px}
 }
 .jump:hover{background:var(--ink);color:#fff}
 
+/* ---------- 截止後的結束公告 ---------- */
+.closed{
+  max-width:520px; margin:0 auto; padding:64px 26px;
+  text-align:center; color:var(--ink-soft);
+}
+.closed h1{
+  font-family:var(--serif); font-size:23px; font-weight:normal;
+  letter-spacing:.1em; line-height:1.7; color:var(--ink); margin:0 0 26px;
+}
+.closed p{font-size:14px;line-height:2;margin:0 0 18px}
+.closed a{
+  display:inline-block; margin-top:14px; padding:14px 30px;
+  background:var(--green); color:#fff; text-decoration:none;
+  border-radius:10px; font-size:15px; letter-spacing:.08em;
+}
+.closed .sign{
+  margin-top:40px; font-family:var(--serif); font-size:14px;
+  letter-spacing:.2em; color:var(--ink-faint);
+}
+
 /* ---------- 底部購物列 ---------- */
 .bar{
   position:fixed; left:0; right:0; bottom:0; z-index:30;
@@ -391,7 +411,7 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
   <div class="panel" id="panel"></div>
 </div>
 
-<script src="data/products.js?v=202608190951"></script>
+<script src="data/products.js?v=202608191030"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -402,6 +422,8 @@ const CONFIG = {
   lineUrl: 'https://lin.ee/v7pysVk',
   // 匯款資訊：顯示在結帳頁，客人可以當場轉帳
   bank: {code:'812 台新銀行', account:'28881017280464'},
+  // 下單截止：到期後整頁換成結束公告。要延長就改這個時間
+  deadline: '2026-08-31T23:59:59+08:00',
   lowStock: 3,          // 剩幾件以下顯示「僅剩 N 件」
   // 每個分類開頭的實拍照：把檔案放進 photos/，命名成「分類名-1.jpg」「分類名-2.jpg」⋯⋯
   // 有幾張就放幾張（最多 6 張），沒放的自動不顯示，不用改這裡的程式
@@ -423,6 +445,22 @@ const CONFIG = {
     }
   }
 };
+
+/* ---------------- 截止 ---------------- */
+const closed = CONFIG.deadline && Date.now() > new Date(CONFIG.deadline).getTime();
+if (closed){
+  document.body.innerHTML =
+    '<div class="closed">' +
+      '<h1>2026 文博會新品線上加購<br>已經結束囉</h1>' +
+      '<p>謝謝每一位下單的筆友，也謝謝在文博會現場停下腳步的你。<br>' +
+        '這次的訂單我們會陸續出貨，有任何問題都可以到官方 LINE 找我們。</p>' +
+      '<p>下次的活動與新品，也會在官方 LINE 先跟大家說唷！</p>' +
+      '<a href="' + CONFIG.lineUrl + '" target="_blank" rel="noopener">前往三支筆官方 LINE</a>' +
+      '<p class="sign">三支筆工作室</p>' +
+    '</div>';
+}
+
+if (!closed) {
 
 /* ---------------- 狀態 ---------------- */
 const cart = {};                       // id -> 數量
@@ -454,7 +492,7 @@ function loadDraft(){
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608190951
+// data/products.js?v=202608191030
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
@@ -931,6 +969,8 @@ window.addEventListener('scroll', () => {
 }, {passive:true});
 syncNav();
 loadNearbyShots();
+
+}   // 截止後這一整段都不執行
 
 // 點分類或「開始選商品」會直接跳過去，來不及等捲動事件，先把照片叫出來
 document.querySelectorAll('nav button').forEach((b, i) => {
