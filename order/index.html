@@ -391,7 +391,7 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
   <div class="panel" id="panel"></div>
 </div>
 
-<script src="data/products.js?v=202608190941"></script>
+<script src="data/products.js?v=202608190951"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -454,7 +454,7 @@ function loadDraft(){
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608190941
+// data/products.js?v=202608190951
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
@@ -783,9 +783,10 @@ function submit(){
   const btn = panel.querySelector('.submit');
   if (btn){ btn.disabled = true; btn.textContent = '送出中…'; }
 
+  const paid = saved.last5.trim();          // 完成畫面的文案要看有沒有真的匯款了
   sendToForm(orderNo, c, text).finally(() => {
     sending = false;
-    showDone(orderNo, text);
+    showDone(orderNo, paid);
   });
 }
 
@@ -833,27 +834,31 @@ function sendToForm(no, c, text){
   return fetch(F.action, {method:'POST', mode:'no-cors', body:fd}).catch(() => {});
 }
 
-function showDone(no, text){
-  const connected = !!CONFIG.form.action;
+function showDone(no, last5){
+  const paid = !!last5;
   panel.innerHTML =
     '<div class="done">' +
       '<h3>訂單已送出，<span class="warn">可以截圖保存</span></h3>' +
       '<div class="no"><div class="lbl">訂單編號</div>' +
         '<div class="val">' + no + '</div>' +
         '<div class="tip">點一下複製</div></div>' +
-      '<div class="steps hi-only">' +
-        '<b>最後一步：</b>請到官方 LINE 告訴我們「<b>已匯款</b>」，' +
-        '方便小幫手核對，也才能隨時跟您更新出貨進度唷！' +
+      '<div class="steps hi-only">' + (paid
+        ? '<b>最後一步：</b>請到官方 LINE 告訴我們「<b>已匯款</b>」，' +
+          '方便小幫手核對，也才能隨時跟您更新出貨進度唷！'
+        : '<b>最後一步：</b>完成匯款後，請到官方 LINE 告訴我們「<b>已匯款</b>」並附上帳號後五碼，' +
+          '方便小幫手核對，也才能隨時跟您更新出貨進度唷！') +
       '</div>' +
       '<div class="btns">' +
         '<button class="copy">複製訂單編號</button>' +
-        '<a class="primary" href="' + CONFIG.lineUrl + '" target="_blank" rel="noopener">前往官方 LINE 告知已匯款</a>' +
+        '<a class="primary" href="' + CONFIG.lineUrl + '" target="_blank" rel="noopener">' + (paid ? '前往官方 LINE 告知已匯款' : '前往官方 LINE') + '</a>' +
       '</div>' +
       '<p class="shotnote">按下「複製訂單編號」會複製好一句話，到官方 LINE 貼上就完成了。<br>' +
         '也建議<b>截圖保存這個畫面</b>。</p>' +
     '</div>';
   // 複製的是一句可以直接貼到 LINE 的話，不用客人自己打字
-  const msg = '【三支筆】訂單編號 ' + no + '，我已完成匯款。';
+  const msg = paid
+    ? '【三支筆】訂單編號 ' + no + '，我已完成匯款，帳號後五碼 ' + last5 + '。'
+    : '【三支筆】訂單編號 ' + no + '，我稍後會完成匯款。';
   const btn = panel.querySelector('.copy');
   const box = panel.querySelector('.no');
   const copyAll = () => {
