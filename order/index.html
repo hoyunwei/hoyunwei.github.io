@@ -452,7 +452,7 @@ window.onerror = function(msg, src, line, col){
   } catch (e) {}
 };
 </script>
-<script src="data/products.js?v=202608191134"></script>
+<script src="data/products.js?v=202608191138"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -550,7 +550,7 @@ function loadDraft(){
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608191134
+// data/products.js?v=202608191138
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
@@ -969,7 +969,7 @@ function showDone(no, last5, text){
       '</div>' +
       '<div class="btns">' +
         '<button class="copy">複製訂單編號和明細</button>' +
-        '<a class="primary" href="' + CONFIG.lineUrl + '" target="_blank" rel="noopener">' + (paid ? '前往官方 LINE 留言「已匯款」' : '前往官方 LINE') + '</a>' +
+        '<a class="primary" href="' + CONFIG.lineUrl + '" target="_blank" rel="noopener">' + (paid ? '前往官方 LINE 留言「已匯款」' : '匯款後到官方 LINE 留言「已匯款」') + '</a>' +
       '</div>' +
       '<p class="shotnote">按下「複製訂單編號和明細」會複製好完整的訂單資訊，到官方 LINE 貼上就完成了。<br>' +
         '也建議<b>截圖保存這個畫面</b>。</p>' +
