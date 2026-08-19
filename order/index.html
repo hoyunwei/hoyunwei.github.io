@@ -452,7 +452,7 @@ window.onerror = function(msg, src, line, col){
   } catch (e) {}
 };
 </script>
-<script src="data/products.js?v=202608191123"></script>
+<script src="data/products.js?v=202608191126"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -550,7 +550,7 @@ function loadDraft(){
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608191123
+// data/products.js?v=202608191126
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
@@ -792,7 +792,7 @@ function openSheet(){
       '<div class="bank-tip">請匯款後在下方填寫帳號後五碼，方便小幫手核對。</div>' +
     '</div>' +
     field('line', 'LINE 顯示名稱', true, '用於核對訂單以及通知出貨') +
-    field('email', 'Email', false, '選填，萬一 LINE 聯絡不上，我們會改用 Email 找您', false, 'email') +
+    field('email', 'Email', true, '萬一 LINE 聯絡不上，我們會改用 Email 找您', false, 'email') +
     field('store', '7-11 取貨門市', true, '為避免相似店名填寫有誤，請填店號和店名，例如 123456 光復門市') +
     field('recipient', '收件人姓名', true, '請填寫您的正確姓名，取貨時 7-11 會需要核對身分') +
     field('phone', '收件人電話', true, '') +
@@ -866,7 +866,7 @@ let sending = false;
 
 function submit(){
   if (sending) return;
-  const need = ['line', 'store', 'recipient', 'phone'];
+  const need = ['line', 'email', 'store', 'recipient', 'phone'];
   let bad = null;
   need.forEach(k => {
     const f = panel.querySelector('[data-f="' + k + '"]');
@@ -904,7 +904,7 @@ function submit(){
   const paid = saved.last5.trim();          // 完成畫面的文案要看有沒有真的匯款了
   sendToForm(orderNo, c, text).finally(() => {
     sending = false;
-    showDone(orderNo, paid);
+    showDone(orderNo, paid, text);
   });
 }
 
@@ -953,7 +953,7 @@ function sendToForm(no, c, text){
   return fetch(F.action, {method:'POST', mode:'no-cors', body:fd}).catch(() => {});
 }
 
-function showDone(no, last5){
+function showDone(no, last5, text){
   const paid = !!last5;
   panel.innerHTML =
     '<div class="done">' +
@@ -968,16 +968,18 @@ function showDone(no, last5){
           '方便小幫手核對，也才能隨時跟您更新出貨進度唷！') +
       '</div>' +
       '<div class="btns">' +
-        '<button class="copy">複製訂單編號</button>' +
+        '<button class="copy">複製訂單編號和明細</button>' +
         '<a class="primary" href="' + CONFIG.lineUrl + '" target="_blank" rel="noopener">' + (paid ? '前往官方 LINE 告知已匯款' : '前往官方 LINE') + '</a>' +
       '</div>' +
-      '<p class="shotnote">按下「複製訂單編號」會複製好一句話，到官方 LINE 貼上就完成了。<br>' +
+      '<p class="shotnote">按下「複製訂單編號和明細」會複製好完整的訂單資訊，到官方 LINE 貼上就完成了。<br>' +
         '也建議<b>截圖保存這個畫面</b>。</p>' +
     '</div>';
-  // 複製的是一句可以直接貼到 LINE 的話，不用客人自己打字
-  const msg = paid
-    ? '【三支筆】訂單編號 ' + no + '，我已完成匯款，帳號後五碼 ' + last5 + '。'
-    : '【三支筆】訂單編號 ' + no + '，我稍後會完成匯款。';
+  /* 複製的內容：第一行是重點（已匯款沒有），下面接完整明細。
+     這樣客人到官方 LINE 貼一次，對帳要的東西就都在了。 */
+  const msg = (paid
+      ? '我已完成匯款，帳號後五碼 ' + last5 + '。'
+      : '我稍後會完成匯款。')
+    + '\n\n' + (text || '訂單編號：' + no);
   const btn = panel.querySelector('.copy');
   const box = panel.querySelector('.no');
   const copyAll = () => {
@@ -986,7 +988,7 @@ function showDone(no, last5){
       box.classList.add('copied');
       box.querySelector('.tip').textContent = '已複製，到官方 LINE 貼上就好';
       setTimeout(() => {
-        btn.textContent = '複製訂單編號';
+        btn.textContent = '複製訂單編號和明細';
         box.classList.remove('copied');
         box.querySelector('.tip').textContent = '點一下複製';
       }, 2500);
