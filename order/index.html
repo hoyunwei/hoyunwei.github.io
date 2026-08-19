@@ -429,7 +429,26 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
   <div class="panel" id="panel"></div>
 </div>
 
-<script src="data/products.js?v=202608191047"></script>
+<script>
+/* 診斷用：手機上出問題時，把錯誤直接印在畫面上，才有辦法回報。
+   平常不會出現，出現了就代表真的有東西壞掉。 */
+window.onerror = function(msg, src, line, col){
+  try {
+    let box = document.getElementById('errbox');
+    if (!box){
+      box = document.createElement('div');
+      box.id = 'errbox';
+      box.style.cssText = 'margin:16px;padding:14px;border:2px solid #C8452E;border-radius:10px;' +
+        'background:#fff;color:#C8452E;font-size:12px;line-height:1.7;word-break:break-all;' +
+        'font-family:menlo,monospace;position:relative;z-index:99';
+      (document.body || document.documentElement).insertBefore(box, document.body.firstChild);
+    }
+    box.appendChild(document.createTextNode('⚠ ' + msg + '｜' + (src||'').split('/').pop() + ' 第 ' + line + ' 行'));
+    box.appendChild(document.createElement('br'));
+  } catch (e) {}
+};
+</script>
+<script src="data/products.js?v=202608191052"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -521,7 +540,7 @@ function loadDraft(){
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608191047
+// data/products.js?v=202608191052
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
@@ -533,6 +552,7 @@ const secs = document.getElementById('sections');
 secs.innerHTML = '';                      // 資料到了，把「載入中」收掉
 
 GROUPS.forEach((g, i) => {
+ try {
   const b = document.createElement('button');
   b.textContent = g.title;
   b.className = i === 0 ? 'on' : '';
@@ -563,7 +583,14 @@ GROUPS.forEach((g, i) => {
     sec.insertBefore(info, grid);
   }
 
-  g.items.forEach(it => grid.appendChild(card(it)));
+  // 一款商品出問題不該讓整個分類消失，更不該讓後面的分類都畫不出來
+  g.items.forEach(it => {
+    try { grid.appendChild(card(it)); }
+    catch (e) { window.onerror('商品 ' + it.id + '：' + e.message, 'card', 0); }
+  });
+ } catch (e) {
+  window.onerror('分類 ' + g.key + '：' + e.message, 'group', 0);
+ }
 });
 
 /* 分類開頭的實拍照。photos/{分類名}-1.jpg 依序試到 photoMax，
