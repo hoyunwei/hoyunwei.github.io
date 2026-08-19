@@ -392,7 +392,7 @@ footer{text-align:center;font-size:11.5px;color:var(--ink-faint);padding:28px 20
   <div class="panel" id="panel"></div>
 </div>
 
-<script src="data/products.js?v=202608190929"></script>
+<script src="data/products.js?v=202608190934"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -406,7 +406,7 @@ const CONFIG = {
   lowStock: 3,          // 剩幾件以下顯示「僅剩 N 件」
   // 每個分類開頭的實拍照：把檔案放進 photos/，命名成「分類名-1.jpg」「分類名-2.jpg」⋯⋯
   // 有幾張就放幾張（最多 6 張），沒放的自動不顯示，不用改這裡的程式
-  photoNames: {a4:'A4海報', long:'細長海報', letter:'凸版明信片', square:'凸版方形', lfolder:'L夾', crystal:'水晶貼'},
+  photoNames: {a4:'A4海報', long:'細長海報', letter:'凸版明信片', square:'凸版方形', lfolder:'L夾', bag:'帆布袋', crystal:'水晶貼'},
   photoMax: 6,
   // Google 表單「商品訂購單」，送出後自動進回覆試算表
   form: {
@@ -455,7 +455,7 @@ function loadDraft(){
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608190929
+// data/products.js?v=202608190934
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
