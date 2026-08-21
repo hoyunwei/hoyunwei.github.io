@@ -326,6 +326,21 @@ section{padding:26px 14px 6px;scroll-margin-top:56px}
 .field .hint{font-size:11.5px;color:var(--ink-faint);margin-top:3px;line-height:1.5}
 .field.bad input,.field.bad textarea{border-bottom-color:var(--red)}
 .field.bad .hint{color:var(--red)}
+/* 上次沒結帳的購物車被還原時的提示。
+   2026-08-21：沒有這條提示，客人不知道車裡有上次留下的東西，
+   結果算出來的金額跟頁面不一樣（顧芷芸那筆匯款少了一張水晶貼的錢）。 */
+.restored{
+  margin:0 14px 16px; padding:12px 14px; border-radius:10px;
+  background:rgba(200,69,46,.07); border:1px solid rgba(200,69,46,.25);
+  font-size:13px; line-height:1.75; color:var(--ink);
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+}
+.restored b{color:var(--red)}
+.restored button{
+  margin-left:auto; padding:7px 14px; font-size:12.5px; font-family:inherit;
+  border:1px solid var(--red); background:#fff; color:var(--red); border-radius:999px;
+}
+
 /* 蜜罐欄位：推到畫面外，不用 display:none（有些程式會跳過看不見的欄位） */
 .hp{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
 
@@ -474,7 +489,7 @@ window.onerror = function(msg, src, line, col){
   } catch (e) {}
 };
 </script>
-<script src="data/products.js?v=202608201145"></script>
+<script src="data/products.js?v=202608212039"></script>
 <script>
 /* =========================================================
    設定區：要改運費、LINE 連結、Google 表單就改這裡
@@ -561,18 +576,20 @@ function loadDraft(){
   try { d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch (e) { return; }
   if (!d || !d.t || Date.now() - d.t > 3 * 24 * 3600 * 1000) return;   // 放超過三天就不要了
   Object.keys(d.saved || {}).forEach(k => { if (k in saved) saved[k] = d.saved[k]; });
+  let back = 0;
   Object.entries(d.cart || {}).forEach(([id, n]) => {
     const it = byId[id];
     if (!it || it.soldout) return;                    // 商品已下架或售完就跳過
     const max = (isPre(it) || it.noCount) ? n : Math.min(n, it.stock);
-    if (max > 0) cart[id] = max;                      // 庫存變少了就跟著調
+    if (max > 0){ cart[id] = max; back += max; }      // 庫存變少了就跟著調
   });
+  return back;                                        // 還原了幾件，要明白告訴客人
 }
 
 function clearDraft(){
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
 }
-// data/products.js?v=202608201145
+// data/products.js?v=202608212039
 const GROUPS = PRODUCT_GROUPS.filter(g => !g.hidden);
 GROUPS.forEach(g => g.items.forEach(it => byId[it.id] = it));
 // stock 0 = 預購；noCount = 有貨但不報數量（水晶貼沒有分款庫存資料）
@@ -776,11 +793,33 @@ function updateBar(){
 }
 
 /* 恢復上次沒送完的購物車（例如切去銀行 App 匯款後又切回來） */
-loadDraft();
+const restored = loadDraft();
 Object.keys(cart).forEach(id => {
   const el = document.getElementById('card-' + id);
   if (el) renderCtrl(el, byId[id]);
 });
+
+/* 一定要讓客人知道車裡有上次留下的東西，不然他會照自己記得的品項算錢，
+   跟頁面算出來的金額對不起來。（2026-08-21 真的發生過） */
+if (restored > 0){
+  const tip = document.createElement('div');
+  tip.className = 'restored';
+  tip.innerHTML =
+    '<span>🛒 幫您保留了<b> 上次還沒送出的 ' + restored + ' 件 </b>商品，' +
+    '已經放回購物車了。<br>不需要的話可以清空重選，或直接在商品上調整數量。</span>' +
+    '<button type="button">清空購物車</button>';
+  secs.parentNode.insertBefore(tip, secs);
+  tip.querySelector('button').onclick = () => {
+    Object.keys(cart).forEach(id => {
+      delete cart[id];
+      const el = document.getElementById('card-' + id);
+      if (el) renderCtrl(el, byId[id]);
+    });
+    saveDraft();
+    updateBar();
+    tip.remove();
+  };
+}
 updateBar();
 
 /* ---------------- 結帳 ---------------- */
